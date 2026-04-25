@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathPlay — Кіру және Тіркелу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+            --bg-color: #f5f3ff;
+            --card-bg: white;
+            --input-border: #e9e4f8;
+            --input-focus: #6d28d9;
+            --text-dark: #0f0a1e;
+            --text-gray: #6b7280;
+            --success: #10b981;
+            --error: #ef4444;
+            --panel-transition: 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Decorative Blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .blob-1 {
+            width: 500px; height: 500px;
+            background: rgba(102, 126, 234, 0.06);
+            filter: blur(80px);
+            top: -100px; left: -100px;
+        }
+        .blob-2 {
+            width: 400px; height: 400px;
+            background: rgba(118, 75, 162, 0.05);
+            filter: blur(100px);
+            bottom: -100px; right: -100px;
+        }
+
+        .auth-container {
+            width: 900px;
+            height: 560px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(102, 126, 234, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            transition: all 0.6s ease-in-out;
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-container {
+            left: 0;
+            width: 50%;
+            z-index: 2;
+        }
+
+        .register-container {
+            left: 0;
+            width: 50%;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .auth-container.show-register .login-container {
+            transform: translateX(100%);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .auth-container.show-register .register-container {
+            transform: translateX(100%);
+            opacity: 1;
+            z-index: 5;
+        }
+
+        /* Sliding Panel Overlay */
+        .overlay-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            transition: transform var(--panel-transition);
+            z-index: 100;
+        }
+
+        .auth-container.show-register .overlay-container {
+            transform: translateX(-100%);
+        }
+
+        .overlay {
+            background: var(--primary-gradient);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 0 0;
+            color: #FFFFFF;
+            position: relative;
+            left: -100%;
+            height: 100%;
+            width: 200%;
+            transform: translateX(0);
+            transition: transform var(--panel-transition);
+        }
+
+        .auth-container.show-register .overlay {
+            transform: translateX(50%);
+        }
+
+        .overlay-panel {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 0 40px;
+            text-align: center;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            transition: transform var(--panel-transition);
+        }
+
+        .overlay-left {
+            transform: translateX(-20%);
+        }
+
+        .auth-container.show-register .overlay-left {
+            transform: translateX(0);
+        }
+
+        .overlay-right {
+            right: 0;
+            transform: translateX(0);
+        }
+
+        .auth-container.show-register .overlay-right {
+            transform: translateX(20%);
+        }
+
+        /* Panel Decoration Circles */
+        .panel-circle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .p-circle-1 { width: 200px; height: 200px; top: -50px; right: -50px; }
+        .p-circle-2 { width: 150px; height: 150px; bottom: 30px; left: -30px; }
+
+        /* Typography */
+        h1 { font-size: 26px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; }
+        .subtitle { font-size: 14px; color: var(--text-gray); margin-bottom: 28px; }
+        
+        .overlay-logo { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+        .overlay-tagline { font-size: 16px; opacity: 0.9; font-weight: 500; }
+        .overlay-desc { font-size: 13px; opacity: 0.7; margin-top: 8px; max-width: 240px; }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 18px; position: relative; }
+        .form-label {
+            display: block; font-size: 11px; font-weight: 700;
+            color: #374151; text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 6px;
+        }
+        .input-wrapper { position: relative; }
+        .input-wrapper i.prefix-icon {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%); color: #9ca3af; font-size: 18px;
+            pointer-events: none;
+        }
+        .input-wrapper i.eye-icon {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); color: #9ca3af; font-size: 18px;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .input-wrapper i.eye-icon:hover { color: var(--input-focus); }
+
+        input {
+            width: 100%; padding: 14px 16px 14px 44px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 12px; font-size: 15px; font-family: inherit;
+            color: var(--text-dark); transition: all 0.2s ease;
+            background: #fafafa;
+        }
+        input:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+            outline: none; background: white;
+        }
+
+        /* Buttons */
+        .btn-main {
+            width: 100%; padding: 15px;
+            background: var(--primary-gradient);
+            color: white; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.25s ease; margin-top: 10px;
+        }
+        .btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-main:active { transform: translateY(0); }
+
+        .btn-outline {
+            background: transparent; border: 2px solid white;
+            color: white; border-radius: 999px;
+            padding: 12px 32px; font-weight: 600; font-size: 14px;
+            margin-top: 24px; cursor: pointer; transition: 0.3s ease;
+            text-decoration: none;
+        }
+        .btn-outline:hover { background: white; color: #764ba2; }
+
+        /* Password Strength */
+        .strength-meter { display: flex; gap: 4px; margin-top: 8px; }
+        .strength-bar { height: 4px; flex: 1; background: #eee; border-radius: 2px; transition: all 0.3s; }
+        .strength-bar.active { background: var(--error); }
+        .strength-bar.weak { background: #ef4444; }
+        .strength-bar.medium { background: #f59e0b; }
+        .strength-bar.strong { background: #10b981; }
+        .strength-bar.vstrong { background: #667eea; }
+
+        /* Messages */
+        .error-pill {
+            background: #fee2e2; color: #dc2626; border-radius: 8px;
+            padding: 10px 14px; font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; margin-top: 16px;
+        }
+
+        .info-badge {
+            background: #f3f0ff; border-radius: 10px; padding: 12px 14px;
+            border-left: 3px solid var(--input-focus);
+            font-size: 13px; color: #5b21b6; margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        /* Success Overlay */
+        .success-overlay {
+            position: absolute; inset: 0; background: white;
+            z-index: 200; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s;
+        }
+        .success-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .checkmark-svg { width: 80px; height: 80px; margin-bottom: 20px; }
+        .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: var(--success); fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+        .checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke: var(--success); stroke-width: 3; fill: none; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
+
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .auth-container { width: 95%; height: auto; border-radius: 20px; padding: 20px 0; }
+            .overlay-container { display: none; }
+            .form-container { position: relative; width: 100%; opacity: 1 !important; transform: none !important; padding: 24px; }
+            .register-container { display: none; }
+            .auth-container.show-register .login-container { display: none; }
+            .auth-container.show-register .register-container { display: flex; }
+            
+            .mobile-tabs {
+                display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
+            }
+            .m-tab {
+                padding: 8px 24px; border-radius: 999px; font-size: 14px; font-weight: 700;
+                color: var(--text-gray); cursor: pointer; transition: all 0.2s;
+            }
+            .m-tab.active { background: var(--primary-gradient); color: white; }
+        }
+
+        @media (min-width: 769px) { .mobile-tabs { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="auth-container {% if mode == 'register' %}show-register{% endif %}" id="authContainer">
+        
+        <!-- Back Button -->
+        <a href="/" style="
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #4c1d95;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        " onmouseover="this.style.transform='translateX(-4px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)'" 
+           onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+            <i class="ph-bold ph-arrow-left"></i> Артқа
+        </a>
+        
+        <!-- Mobile Tabs -->
+        <div class="mobile-tabs">
+            <div class="m-tab {% if mode != 'register' %}active{% endif %}" id="mTabLogin">Кіру</div>
+            <div class="m-tab {% if mode == 'register' %}active{% endif %}" id="mTabRegister">Тіркелу</div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="form-container login-container">
+            <form action="/login/" method="post">
+                {% csrf_token %}
+                <div style="color: var(--violet-dark, #4c1d95); font-weight: 800; font-size: 18px; margin-bottom: 32px; display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #6d28d9; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="ph-bold ph-lightning"></i></span> MathPlay
+                </div>
+                <h1>Қайта оралдыңыз! 👋</h1>
+                <p class="subtitle">Аккаунтыңызға кіріңіз</p>
+
+                <div class="form-group">
+                    <label class="form-label">Қолданушы аты</label>
+                    <div class="input-wrapper">
+                        <i class="ph-duotone ph-user prefix-icon"></i>
+                        <input type="text" name="username" placeholder="Атыңызды енгізіңіз" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <div class="input-wrapper">
+                        <i class="ph-duotone ph-lock prefix-icon"></i>
+                        <input type="password" name="password" class="pass-input" placeholder="••••••••" required>
+                        <i class="ph-duotone ph-eye eye-icon toggle-pass"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-main">Кіру</button>
+
+                {% if error and mode != 'register' %}
+                <div class="error-pill">
+                    <i class="ph-fill ph-warning-circle"></i> {{ error }}
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div class="form-container register-container">
+            <form action="/register/" method="post" id="regForm">
+                {% csrf_token %}
+                <h1>Бастайық! 🚀</h1>
+                <p class="subtitle">Мұғалім аккаунт жасаңыз</p>
+
+                <div class="info-badge">
+                    ⚡ Тіркелгенде 5 дайын ойын автоматты қосылады
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Қолданушы аты</label>
+                    <div class="input-wrapper">
+                        <i class="ph-duotone ph-user prefix-icon"></i>
+                        <input type="text" name="username" placeholder="мысалы: aigerim_teacher" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <div class="input-wrapper">
+                        <i class="ph-duotone ph-lock prefix-icon"></i>
+                        <input type="password" name="password" id="regPass" class="pass-input" placeholder="Кем дегенде 6 таңба" required>
+                        <i class="ph-duotone ph-eye eye-icon toggle-pass"></i>
+                    </div>
+                    <div class="strength-meter" id="strengthMeter">
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Паролді растау</label>
+                    <div class="input-wrapper">
+                        <i class="ph-duotone ph-check-circle prefix-icon"></i>
+                        <input type="password" name="password2" class="pass-input" placeholder="Паролді қайта енгізіңіз" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-main">Тіркелу</button>
+
+                {% if error and mode == 'register' %}
+                <div class="error-pill">
+                    <i class="ph-fill ph-warning-circle"></i> {{ error }}
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- SLIDING PANEL OVERLAY -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <!-- PANEL LEFT (Shows when Registering) -->
+                <div class="overlay-panel overlay-left">
+                    <div class="panel-circle p-circle-1"></div>
+                    <div class="panel-circle p-circle-2"></div>
+                    <div class="overlay-logo">
+                        <i class="ph-fill ph-lightning"></i> MathPlay
+                    </div>
+                    <p class="overlay-tagline">Аккаунтыңыз бар ма?</p>
+                    <button class="btn-outline" id="toLogin">← Кіру</button>
+                </div>
+
+                <!-- PANEL RIGHT (Shows when Logging In) -->
+                <div class="overlay-panel overlay-right">
+                    <div class="panel-circle p-circle-1"></div>
+                    <div class="panel-circle p-circle-2"></div>
+                    <div class="overlay-logo">
+                        <i class="ph-fill ph-lightning"></i> MathPlay
+                    </div>
+                    <p class="overlay-tagline">Жаңа пайдаланушысыз ба?</p>
+                    <p class="overlay-desc">Тіркеліңіз — 5 дайын ойын автоматты қосылады</p>
+                    <button class="btn-outline" id="toRegister">Тіркелу →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUCCESS OVERLAY -->
+        <div class="success-overlay" id="successOverlay">
+            <svg class="checkmark-svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+            <h2 style="font-weight: 800; color: var(--text-dark);">Аккаунт жасалды!</h2>
+            <p style="color: var(--text-gray); margin-top: 8px;">Кіруге өтіңіз...</p>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('authContainer');
+        const toRegister = document.getElementById('toRegister');
+        const toLogin = document.getElementById('toLogin');
+        const mTabLogin = document.getElementById('mTabLogin');
+        const mTabRegister = document.getElementById('mTabRegister');
+
+        // Toggle logic
+        toRegister.addEventListener('click', () => {
+            container.classList.add('show-register');
+            history.pushState(null, '', '/register/');
+        });
+
+        toLogin.addEventListener('click', () => {
+            container.classList.remove('show-register');
+            history.pushState(null, '', '/login/');
+        });
+
+        // Mobile Tabs
+        mTabLogin.addEventListener('click', () => {
+            container.classList.remove('show-register');
+            mTabLogin.classList.add('active');
+            mTabRegister.classList.remove('active');
+        });
+        mTabRegister.addEventListener('click', () => {
+            container.classList.add('show-register');
+            mTabRegister.classList.add('active');
+            mTabLogin.classList.remove('active');
+        });
+
+        // Password Show/Hide
+        document.querySelectorAll('.toggle-pass').forEach(eye => {
+            eye.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.replace('ph-eye', 'ph-eye-slash');
+                } else {
+                    input.type = 'password';
+                    this.classList.replace('ph-eye-slash', 'ph-eye');
+                }
+            });
+        });
+
+        // Password Strength
+        const regPass = document.getElementById('regPass');
+        const bars = document.querySelectorAll('#strengthMeter .strength-bar');
+        
+        regPass.addEventListener('input', function() {
+            const val = this.value;
+            let strength = 0;
+            if (val.length >= 6) strength++;
+            if (val.match(/[0-9]/)) strength++;
+            if (val.match(/[A-Z]/)) strength++;
+            if (val.match(/[^A-Za-z0-9]/)) strength++;
+
+            bars.forEach((bar, i) => {
+                bar.className = 'strength-bar';
+                if (i < strength) {
+                    if (strength === 1) bar.classList.add('weak');
+                    else if (strength === 2) bar.classList.add('medium');
+                    else if (strength === 3) bar.classList.add('strong');
+                    else if (strength === 4) bar.classList.add('vstrong');
+                }
+            });
+        });
+
+        // Simulate Success on Register (for demo/UX)
+        // In real Django, you'd probably just redirect from view, 
+        // but if we want the animation, we'd use AJAX. 
+        // For now, let's just make sure the form works.
+        // AJAX Register
+        const regForm = document.getElementById('regForm');
+        const successOverlay = document.getElementById('successOverlay');
+
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(regForm);
+            
+            try {
+                const response = await fetch('/register/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Show success animation
+                    successOverlay.classList.add('active');
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 2200);
+                } else {
+                    // Handle error (you might want to show a pill here)
+                    alert('Қате: ' + (data.error || 'Тіркелу мүмкін болмады'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

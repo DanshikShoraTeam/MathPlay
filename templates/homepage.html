@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="kk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathPlay — Математиканы ойынға айналдыр</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --violet: #6d28d9;
+      --violet-dark: #4c1d95;
+      --violet-mid: #8b5cf6;
+      --violet-light: #ede9fe;
+      --violet-pale: #f5f3ff;
+      --ink: #0f0a1e;
+      --ink-mid: #2d1b69;
+      --gray: #6b7280;
+      --gray-light: #f3f4f6;
+      --white: #ffffff;
+      --border: #e9e4f8;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* ── NAVBAR ── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 56px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--violet-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--violet);
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray);
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--violet);
+    }
+
+    .nav-btn {
+      background: var(--violet);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .nav-btn:hover {
+      background: var(--violet-dark);
+      transform: translateY(-1px);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      padding: 130px 56px 80px;
+      background: var(--violet-pale);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* background decoration */
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(109, 40, 217, 0.08) 0%, transparent 70%);
+      bottom: -80px;
+      left: 200px;
+      pointer-events: none;
+    }
+
+    .hero-left {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--violet-light);
+      color: var(--violet);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(109, 40, 217, 0.2);
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .hero-tag .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--violet);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(1.4);
+      }
+    }
+
+    .hero-h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 62px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      color: var(--ink);
+      margin-top: 20px;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    .hero-h1 .accent {
+      color: var(--violet);
+      position: relative;
+    }
+
+    .hero-h1 .accent::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--violet-light);
+      border-radius: 2px;
+      z-index: -1;
+    }
+
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--gray);
+      max-width: 420px;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .hero-actions {
+      margin-top: 36px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      animation: fadeUp 0.6s ease 0.4s both;
+    }
+
+    .btn-main {
+      background: var(--violet);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 15px 30px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-main:hover {
+      background: var(--violet-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(109, 40, 217, 0.3);
+    }
+
+    .btn-ghost {
+      background: white;
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 15px 30px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--violet-mid);
+      color: var(--violet);
+    }
+
+    /* hero right — mockup */
+    .hero-right {
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.7s ease 0.3s both;
+    }
+
+    .mockup-card {
+      background: white;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 28px;
+      box-shadow:
+        0 4px 6px rgba(109, 40, 217, 0.04),
+        0 20px 48px rgba(109, 40, 217, 0.1);
+      max-width: 420px;
+      margin-left: auto;
+      transform: rotate(1deg);
+      transition: transform 0.3s;
+    }
+
+    .mockup-card:hover {
+      transform: rotate(0deg);
+    }
+
+    .mc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .mc-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .mc-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .mc-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+
+    .mc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mc-game {
+      height: 80px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+      transition: transform 0.2s;
+    }
+
+    .mc-game:hover {
+      transform: scale(1.03);
+    }
+
+    .g1 {
+      background: var(--violet);
+    }
+
+    .g2 {
+      background: #db2777;
+    }
+
+    .g3 {
+      background: #0891b2;
+    }
+
+    .g4 {
+      background: #059669;
+    }
+
+    .mc-footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mc-status {
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .mc-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: #dcfce7;
+      color: #166534;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    /* floating badges */
+    .float-badge {
+      position: absolute;
+      background: white;
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: floatUD 3s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    .float-badge.top {
+      top: -20px;
+      right: -10px;
+      animation-delay: 0s;
+    }
+
+    .float-badge.bottom {
+      bottom: -16px;
+      left: -10px;
+      animation-delay: 1.5s;
+    }
+
+    .fb-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .fb-xp {
+      color: var(--violet);
+    }
+
+    @keyframes floatUD {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── GAMES SECTION ── */
+    .games {
+      padding: 100px 56px;
+      background: white;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      text-align: center;
+      color: var(--ink);
+      letter-spacing: -1px;
+    }
+
+    .section-sub {
+      text-align: center;
+      font-size: 16px;
+      color: var(--gray);
+      margin-top: 10px;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-top: 52px;
+    }
+
+    .game-card {
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: white;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--violet-mid);
+      box-shadow: 0 16px 40px rgba(109, 40, 217, 0.12);
+    }
+
+    .game-top {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-top::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .game-card:hover .game-top::after {
+      opacity: 1;
+    }
+
+    .gt1 {
+      background: var(--violet);
+    }
+
+    .gt2 {
+      background: #be185d;
+    }
+
+    .gt3 {
+      background: #0e7490;
+    }
+
+    .gt4 {
+      background: #047857;
+    }
+
+    .gt5 {
+      background: #b45309;
+    }
+
+    .game-bottom {
+      padding: 18px 16px;
+    }
+
+    .game-name {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .game-desc {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 4px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how {
+      padding: 100px 56px;
+      background: var(--violet-pale);
+    }
+
+    .steps {
+      display: flex;
+      gap: 0;
+      margin-top: 56px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 80px;
+      right: 80px;
+      border-top: 2px dashed rgba(109, 40, 217, 0.2);
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      padding: 0 20px;
+    }
+
+    .step-num {
+      width: 56px;
+      height: 56px;
+      background: var(--violet);
+      color: white;
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 4px 16px rgba(109, 40, 217, 0.3);
+    }
+
+    .step-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+      margin-top: 18px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--gray);
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    /* ── CTA ── */
+    .cta-wrap {
+      padding: 0 56px 100px;
+      background: var(--violet-pale);
+    }
+
+    .cta {
+      background: var(--violet-dark);
+      border-radius: 24px;
+      padding: 72px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      top: -150px;
+      right: -100px;
+      pointer-events: none;
+    }
+
+    .cta::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.03);
+      bottom: -100px;
+      left: -50px;
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 44px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-sub {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 32px;
+      background: white;
+      color: var(--violet-dark);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 15px 36px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-btn:hover {
+      background: var(--violet-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      padding: 40px 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .f-logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .f-logo span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--violet);
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .f-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-top: 4px;
+    }
+
+    .f-copy {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 110px 32px 60px;
+      }
+
+      .hero-sub {
+        margin: 16px auto 0;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .mockup-card {
+        margin: 0 auto;
+      }
+
+      .float-badge.top {
+        right: 10px;
+      }
+
+      .float-badge.bottom {
+        left: 10px;
+      }
+
+      .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav {
+        padding: 0 20px;
+      }
+
+      .hero {
+        padding: 100px 20px 60px;
+      }
+
+      .hero-h1 {
+        font-size: 40px;
+      }
+
+      .games {
+        padding: 60px 20px;
+      }
+
+      .games-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .how {
+        padding: 60px 20px;
+      }
+
+      .steps {
+        flex-direction: column;
+        gap: 36px;
+      }
+
+      .steps::before {
+        display: none;
+      }
+
+      .cta-wrap {
+        padding: 0 20px 60px;
+      }
+
+      .cta {
+        padding: 48px 24px;
+      }
+
+      .cta-title {
+        font-size: 32px;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 32px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <span><i class="ph-bold ph-lightning"></i></span> MathPlay
+    </a>
+    <div class="nav-right">
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="nav-btn">Админкаға өту</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="nav-link">Кіру</a>
+        <a href="{% url 'register' %}" class="nav-btn">Тіркелу</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">
+        <span class="dot"></span>
+        Мұғалімдерге арналған платформа
+      </div>
+      <h1 class="hero-h1">
+        Математиканы<br>
+        <span class="accent">ойынға айналдыр</span>
+      </h1>
+      <p class="hero-sub">
+        Сұрақ жаса. Жариялан. Оқушылар ойнайды.<br>
+        Кез келген тақырыпты 2 минутта интерактивті форматқа өткізіңіз.
+      </p>
+      <div class="hero-actions">
+        <a href="/register/" class="btn-main">
+          Тегін бастау <i class="ph-bold ph-arrow-right"></i>
+        </a>
+        <a href="#games" class="btn-ghost">
+          <i class="ph-bold ph-play-circle"></i> Ойындарды көру
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div style="position:relative; display:inline-block; width:100%;">
+        <!-- top floating badge -->
+        <div class="float-badge top">
+          <span class="fb-dot"></span>
+          Жаңа нәтиже келді!
+        </div>
+
+        <div class="mockup-card">
+          <div class="mc-header">
+            <span class="mc-title">Ойындарым</span>
+            <div class="mc-dots">
+              <div class="mc-dot"></div>
+              <div class="mc-dot"></div>
+              <div class="mc-dot"></div>
+            </div>
+          </div>
+          <div class="mc-grid">
+            <div class="mc-game g1">Froggy</div>
+            <div class="mc-game g2">Quiz</div>
+            <div class="mc-game g3">Memory</div>
+            <div class="mc-game g4">Match</div>
+          </div>
+          <div class="mc-footer">
+            <span class="mc-status">5 ойын жарияланды</span>
+            <span class="mc-badge">● Белсенді</span>
+          </div>
+        </div>
+
+        <!-- bottom floating badge -->
+        <div class="float-badge bottom">
+          <span class="fb-xp"><i class="ph-bold ph-lightning"></i></span>
+          +50 XP жинадың!
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES -->
+  <section class="games" id="games">
+    <div class="section-label">Ойын түрлері</div>
+    <h2 class="section-title">5 ойын, шексіз мүмкіндік</h2>
+    <p class="section-sub">Бір контентті — 5 түрлі ойын форматына айналдырыңыз</p>
+
+    <div class="games-grid">
+      <a href="/games/create/froggy/" class="game-card">
+        <div class="game-top gt1"><i class="ph-bold ph-game-controller" style="color: white;"></i></div>
+        <div class="game-bottom">
+          <div class="game-name">Froggy Jumps</div>
+          <div class="game-desc">Секіру ойыны</div>
+        </div>
+      </a>
+      <a href="/games/create/quiz/" class="game-card">
+        <div class="game-top gt2"><i class="ph-bold ph-question" style="color: white;"></i></div>
+        <div class="game-bottom">
+          <div class="game-name">Quiz</div>
+          <div class="game-desc">Тест сұрақтары</div>
+        </div>
+      </a>
+      <a href="/games/create/memory/" class="game-card">
+        <div class="game-top gt3"><i class="ph-bold ph-brain" style="color: white;"></i></div>
+        <div class="game-bottom">
+          <div class="game-name">Memory</div>
+          <div class="game-desc">Жады ойыны</div>
+        </div>
+      </a>
+      <a href="/games/create/match/" class="game-card">
+        <div class="game-top gt4"><i class="ph-bold ph-link" style="color: white;"></i></div>
+        <div class="game-bottom">
+          <div class="game-name">Match</div>
+          <div class="game-desc">Сәйкестендіру</div>
+        </div>
+      </a>
+      <a href="/games/create/fillblank/" class="game-card">
+        <div class="game-top gt5"><i class="ph-bold ph-pencil-simple" style="color: white;"></i></div>
+        <div class="game-bottom">
+          <div class="game-name">Fill Blank</div>
+          <div class="game-desc">Бос орын толтыру</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how">
+    <div class="section-label">Қалай жұмыс істейді</div>
+    <h2 class="section-title">3 қадам — дайын</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Тіркеліңіз</div>
+        <div class="step-desc">30 секундта аккаунт жасаңыз. 5 дайын ойын автоматты қосылады.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Ойын жасаңыз</div>
+        <div class="step-desc">Түрін таңдап, сұрақтарды енгізіңіз. 2 минут жетеді.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Бөлісіңіз</div>
+        <div class="step-desc">QR-код немесе сілтеме арқылы оқушыларға жіберіңіз.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <section class="cta">
+      <h2 class="cta-title">Бүгін бастаңыз</h2>
+      <p class="cta-sub">Тіркелу тегін. Кредит карта керек емес.</p>
+      <a href="/register/" class="cta-btn">
+        Тегін тіркелу <i class="ph-bold ph-arrow-right"></i>
+      </a>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="f-logo"><span><i class="ph-bold ph-lightning"></i></span> MathPlay</div>
+      <div class="f-sub">Математика мұғалімдеріне арналған платформа</div>
+    </div>
+    <div class="f-copy">© 2025 MathPlay</div>
+  </footer>
+
+</body>
+
+</html>

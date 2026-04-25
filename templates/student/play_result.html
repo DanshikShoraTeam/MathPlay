@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% block title %}Нәтиже — MathPlay{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* Reset base.html constraints for this page */
+.main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+.sidebar { display: none !important; }
+
+:root {
+    --violet: #6d28d9;
+    --violet-dark: #4c1d95;
+    --violet-mid: #8b5cf6;
+    --violet-light: #ede9fe;
+    --violet-pale: #f5f3ff;
+    --ink: #0f0a1e;
+    --gray: #6b7280;
+    --border: #e9e4f8;
+}
+
+body { 
+    background: var(--violet-pale); 
+    min-height: 100vh; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    margin: 0;
+}
+
+.result-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background decoration */
+.result-container::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(109, 40, 217, 0.08) 0%, transparent 70%);
+    top: -200px;
+    right: -100px;
+    border-radius: 50%;
+}
+
+.result-wrap { 
+    max-width: 500px; 
+    width: 100%; 
+    position: relative;
+    z-index: 10;
+}
+
+.result-card {
+    background: white; 
+    border-radius: 32px; 
+    padding: 48px 32px;
+    box-shadow: 0 4px 6px rgba(109, 40, 217, 0.04), 0 24px 64px rgba(109, 40, 217, 0.12);
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.result-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 24px; 
+    font-weight: 800; 
+    color: var(--violet-dark);
+    margin-bottom: 8px; 
+    letter-spacing: -0.5px;
+}
+.result-sub { 
+    font-size: 15px; 
+    color: var(--gray); 
+    font-weight: 500; 
+    margin-bottom: 32px; 
+}
+
+/* Animated score circle */
+.score-circle-wrap {
+    position: relative; 
+    width: 180px; 
+    height: 180px;
+    margin: 0 auto 32px;
+}
+.score-circle-wrap svg { transform: rotate(-90deg); display: block; }
+.ring-bg   { fill: none; stroke: #f5f3ff; stroke-width: 12; }
+.ring-fill { 
+    fill: none; 
+    stroke-width: 12; 
+    stroke-linecap: round; 
+    stroke-dasharray: 502; 
+    stroke-dashoffset: 502; 
+    transition: stroke-dashoffset 2s cubic-bezier(.4,0,.2,1); 
+}
+
+.score-inner {
+    position: absolute; 
+    inset: 0; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+}
+.score-num { 
+    font-family: 'Sora', sans-serif;
+    font-size: 48px; 
+    font-weight: 800; 
+    color: var(--ink); 
+    line-height: 1; 
+}
+.score-pct { 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: var(--gray);
+    margin-top: 4px;
+}
+
+/* XP badge */
+.xp-badge {
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px;
+    background: var(--violet);
+    color: white; 
+    padding: 10px 24px; 
+    border-radius: 50px;
+    font-size: 15px; 
+    font-weight: 700; 
+    margin-bottom: 12px;
+    box-shadow: 0 8px 24px rgba(109, 40, 217, 0.25);
+}
+
+/* Stats row */
+.stats-mini { 
+    display: flex; 
+    justify-content: center; 
+    gap: 32px; 
+    margin: 32px 0; 
+    padding: 24px;
+    background: var(--violet-pale);
+    border-radius: 20px;
+}
+.stat-mini  { text-align: center; }
+.stat-mini .val { 
+    font-family: 'Sora', sans-serif;
+    font-size: 18px; 
+    font-weight: 800; 
+    color: var(--ink); 
+}
+.stat-mini .lbl { 
+    font-size: 11px; 
+    font-weight: 700; 
+    color: var(--gray); 
+    text-transform: uppercase; 
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+}
+
+/* Message */
+.result-msg {
+    font-size: 16px; 
+    font-weight: 700; 
+    margin-bottom: 32px; 
+    padding: 16px; 
+    border-radius: 16px;
+    line-height: 1.4;
+}
+.msg-great  { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+.msg-ok     { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
+.msg-retry  { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+
+/* Buttons */
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.r-btn {
+    padding: 14px; 
+    border-radius: 14px; 
+    font-size: 15px;
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    border: none;
+    font-family: 'DM Sans', sans-serif; 
+    display: flex; 
+    align-items: center;
+    justify-content: center; 
+    gap: 8px; 
+    text-decoration: none;
+}
+.r-btn-primary { 
+    background: var(--violet); 
+    color: white; 
+}
+.r-btn-primary:hover { 
+    background: var(--violet-dark); 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 24px rgba(109, 40, 217, 0.3); 
+}
+.r-btn-outline { 
+    background: white; 
+    color: var(--ink); 
+    border: 1.5px solid var(--border); 
+}
+.r-btn-outline:hover { 
+    border-color: var(--violet); 
+    color: var(--violet);
+    background: var(--violet-pale);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="result-container">
+    <div class="result-wrap">
+        <div class="result-card">
+            <div class="result-title">Ойын аяқталды!</div>
+            <div class="result-sub">{{ session.student_name }} — {{ session.game.title }}</div>
+
+            <!-- Animated score circle -->
+            <div class="score-circle-wrap">
+                <svg width="180" height="180" viewBox="0 0 180 180">
+                    <circle class="ring-bg"   cx="90" cy="90" r="80"/>
+                    <circle class="ring-fill" cx="90" cy="90" r="80" id="ringFill"
+                        stroke="{% if session.score_percent >= 70 %}#10b981{% elif session.score_percent >= 40 %}#f59e0b{% else %}#ef4444{% endif %}"/>
+                </svg>
+                <div class="score-inner">
+                    <div class="score-num" id="scoreNum">0</div>
+                    <div class="score-pct">ПАЙЫЗ</div>
+                </div>
+            </div>
+
+            <!-- XP -->
+            <div>
+                <span class="xp-badge">
+                    <i class="ph-bold ph-sparkle"></i>
+                    +{{ session.xp_earned }} XP жинадың
+                </span>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-mini">
+                <div class="stat-mini">
+                    <div class="val">{{ session.score_percent }}%</div>
+                    <div class="lbl">Балл</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="val">{{ session.time_seconds }}с</div>
+                    <div class="lbl">Уақыт</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="val">{{ session.xp_earned }}</div>
+                    <div class="lbl">XP</div>
+                </div>
+            </div>
+
+            <!-- Message -->
+            {% if session.score_percent >= 70 %}
+            <div class="result-msg msg-great">Керемет! Жарайсың! 🎉</div>
+            {% elif session.score_percent >= 40 %}
+            <div class="result-msg msg-ok">Жаман емес, одан да жақсы жасай аласың!</div>
+            {% else %}
+            <div class="result-msg msg-retry">Тағы бір рет көріп көр — сен жасай аласың!</div>
+            {% endif %}
+
+            <!-- Buttons -->
+            <div class="btn-row">
+                <a href="{% url 'play_entry' session.game.publish_code %}" class="r-btn r-btn-primary">
+                    <i class="ph-bold ph-arrow-counter-clockwise"></i> Қайта ойна
+                </a>
+                <a href="{% url 'homepage' %}" class="r-btn r-btn-outline">
+                    <i class="ph-bold ph-house"></i> Басты бет
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+const pct = {{ session.score_percent }};
+const CIRCUMFERENCE = 502;
+
+// Animate ring
+setTimeout(() => {
+    const ring = document.getElementById('ringFill');
+    ring.style.strokeDashoffset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE;
+}, 100);
+
+// Count up score number
+let count = 0;
+const target = pct;
+const step = Math.max(1, Math.floor(target / 60));
+const counter = setInterval(() => {
+    count = Math.min(count + step, target);
+    document.getElementById('scoreNum').textContent = count;
+    if (count >= target) clearInterval(counter);
+}, 30);
+
+// Confetti if good score
+if (pct >= 70) {
+    setTimeout(() => {
+        confetti({ 
+            particleCount: 150, 
+            spread: 70, 
+            origin: { y: 0.5 }, 
+            colors: ['#6d28d9','#8b5cf6','#10b981','#f59e0b','#ef4444'] 
+        });
+    }, 500);
+}
+
+// Sound
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+function beep(f,d,t='sine',v=0.12){ try{ const c=new AudioCtx(),o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.type=t;o.frequency.value=f; g.gain.setValueAtTime(v,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d); o.start();o.stop(c.currentTime+d); }catch(e){} }
+
+setTimeout(() => {
+    if (pct >= 70) { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.25),i*120)); }
+    else if (pct >= 40) { beep(440,0.2); }
+    else { beep(220,0.3,'sawtooth',0.08); }
+}, 300);
+</script>
+{% endblock %}

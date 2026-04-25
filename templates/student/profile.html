@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Профиль — MathPlay{% endblock %}
+{% block content %}
+<div style="max-width: 800px; margin: 2rem auto;">
+    <div class="card" style="display: flex; gap: 3rem; align-items: center; padding: 3rem;">
+        <div style="width: 120px; height: 120px; background: var(--qz-purple-soft); color: var(--qz-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800;">
+            {{ user.username|first|upper }}
+        </div>
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--qz-text); margin-bottom: 0.5rem;">{{ user.username }}</h1>
+            <p style="color: var(--qz-text-light); font-size: 1.1rem;">Оқушы деңгейі: <span style="color: var(--qz-purple); font-weight: 700;">Жаңадан бастаушы</span></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

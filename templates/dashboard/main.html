@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Менің жинақтарым — MathPlay{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div>
+        <h1 class="page-title">Менің ойындарым</h1>
+        <p class="page-subtitle">Барлық материалдар</p>
+    </div>
+    <a href="{% url 'game_create_type' %}" class="btn btn-primary">
+        <i class="ph-bold ph-plus-circle"></i> Жаңа ойын жасау
+    </a>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="ph-bold ph-game-controller"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Ойындар</span>
+            <span class="stat-value">{{ stats.total_games }}</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fff9f0; color: #f59e0b;">
+            <i class="ph-bold ph-play-circle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Ойналды</span>
+            <span class="stat-value">{{ stats.total_plays }}</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #f0fdf4; color: #10b981;">
+            <i class="ph-bold ph-users"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Оқушылар</span>
+            <span class="stat-value">{{ stats.total_sessions }}</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">
+            <i class="ph-bold ph-star"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Орташа балл</span>
+            <span class="stat-value">{{ stats.avg_score|floatformat:0 }}%</span>
+        </div>
+    </div>
+</div>
+
+<!-- Game Cards -->
+<div class="card-grid">
+    {% for game in games %}
+    <div class="qz-card" onclick="location.href='{% url 'game_stats' game.pk %}'">
+
+        <!-- Header: type badge + actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span class="badge">{{ game.get_game_type_display }}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <!-- Published status pill -->
+                {% if game.is_published %}
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;">
+                    <i class="ph-fill ph-circle" style="font-size: 6px;"></i> Жарияланды
+                </span>
+                {% else %}
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb;">
+                    <i class="ph-fill ph-circle" style="font-size: 6px;"></i> Жобалама
+                </span>
+                {% endif %}
+                
+                <a href="{% url 'game_edit' game.pk %}" onclick="event.stopPropagation()"
+                   style="color: var(--gray); display: flex; align-items: center; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--violet)'" onmouseout="this.style.color='var(--gray)'">
+                    <i class="ph-bold ph-pencil-simple" style="font-size: 1.1rem;"></i>
+                </a>
+                
+                <button onclick="event.stopPropagation(); deleteGame({{ game.pk }})"
+                        style="background: none; border: none; color: var(--gray); cursor: pointer; display: flex; align-items: center; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--gray)'">
+                    <i class="ph-bold ph-trash" style="font-size: 1.1rem;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h3 class="qz-card-title">{{ game.title }}</h3>
+
+        <!-- Footer: avatar + terms count -->
+        <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--gray);">
+                <div class="user-avatar" style="width: 24px; height: 24px; font-size: 11px;">{{ user.username|first|upper }}</div>
+                {{ user.username }}
+            </div>
+            <span style="font-size: 12px; font-weight: 700; color: var(--violet);">{{ game.questions|length }} термин</span>
+        </div>
+
+        <!-- Publish / Share / Unpublish action button -->
+        <div style="position: absolute; right: 12px; bottom: 56px; display: flex; gap: 8px;">
+            {% if game.is_published %}
+            <button onclick="event.stopPropagation(); unpublishGame({{ game.pk }})"
+                    class="btn"
+                    title="Жарияланымнан алу"
+                    style="padding: 0; background: white; color: var(--gray); border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; font-size: 1.1rem; transition: all 0.2s;">
+                <i class="ph-bold ph-eye-slash"></i>
+            </button>
+            <button onclick="event.stopPropagation(); publishGame({{ game.pk }})"
+                    class="btn"
+                    title="Сілтемені көру"
+                    style="padding: 0; background: var(--violet-pale); color: var(--violet); border: 1px solid var(--violet-light); border-radius: 50%; width: 32px; height: 32px; font-size: 1.1rem; transition: all 0.2s;">
+                <i class="ph-bold ph-share-network"></i>
+            </button>
+            {% else %}
+            <button onclick="event.stopPropagation(); publishGameNow({{ game.pk }})"
+                    class="btn"
+                    title="Жариялау"
+                    style="padding: 0 12px; background: var(--violet); color: white; border: none; border-radius: 8px; height: 32px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;">
+                Жариялау
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 5rem 2rem;">
+        <div style="font-size: 3.5rem; color: var(--violet-light); margin-bottom: 1.5rem;"><i class="ph-bold ph-game-controller"></i></div>
+        <h3 style="font-weight: 800; margin-bottom: 0.5rem; font-family: 'Sora', sans-serif;">Ойындар әлі жоқ</h3>
+        <p style="color: var(--gray); margin-bottom: 2rem;">Алғашқы интерактивті ойыныңызды жасаңыз!</p>
+        <a href="{% url 'game_create_type' %}" class="btn btn-primary">Ойын жасау</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% include "dashboard/publish_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function publishGameNow(pk) {
+    if (!confirm('Бұл ойынды жариялағыңыз келе ме?')) return;
+    try {
+        const r = await fetch('/games/' + pk + '/publish/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const j = await r.json();
+        if (j.status === 'ok') location.reload();
+    } catch(e) { console.error(e); }
+}
+
+async function unpublishGame(pk) {
+    if (!confirm('Ойынды жарияланымнан алғыңыз келе ме? Оқушылар сілтеме арқылы кіре алмайтын болады.')) return;
+    try {
+        const r = await fetch('/games/' + pk + '/unpublish/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const j = await r.json();
+        if (j.status === 'ok') location.reload();
+    } catch(e) { console.error(e); }
+}
+
+async function deleteGame(pk) {
+    if (!confirm('Бұл ойынды біржола өшіргіңіз келе ме? Бұл әрекетті қайтару мүмкін емес.')) return;
+    try {
+        const r = await fetch('/games/' + pk + '/delete/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const j = await r.json();
+        if (j.status === 'ok') location.reload();
+    } catch(e) { console.error(e); }
+}
+
+function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+}
+</script>
+{% endblock %}

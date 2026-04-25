@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Ойын табылмады — MathPlay{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 8rem auto; text-align: center; padding: 0 1rem;">
+    <div style="font-size: 4rem; color: var(--qz-purple); margin-bottom: 1.5rem; opacity: 0.4;">
+        <i class="ph-duotone ph-lock"></i>
+    </div>
+    <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--qz-text);">
+        Ойын қол жетімді емес
+    </h1>
+    <p style="color: var(--qz-text-light); font-size: 0.9375rem; margin-bottom: 2.5rem; line-height: 1.6;">
+        Бұл ойын әлі жарияланбаған немесе код дұрыс емес.<br>
+        Мұғалімнен дұрыс сілтемені сұраңыз.
+    </p>
+    <div style="background: var(--qz-purple-soft); border: 1px solid var(--qz-purple-border); border-radius: 10px; padding: 1.25rem; margin-bottom: 2rem;">
+        <p style="font-size: 0.75rem; font-weight: 800; color: var(--qz-text-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem;">Сіз кірмекші болдыңыз</p>
+        <p style="font-size: 1.25rem; font-weight: 800; color: var(--qz-purple); letter-spacing: 0.1em;">{{ code }}</p>
+    </div>
+    <a href="{% url 'homepage' %}" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+        <i class="ph-duotone ph-house"></i> Басты бетке оралу
+    </a>
+</div>
+{% endblock %}

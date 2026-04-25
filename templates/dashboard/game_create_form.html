@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Жаңа ойын — MathPlay{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 5rem auto; padding: 0 1rem;">
+    <div class="qz-card" style="padding: 2.5rem;">
+        <div style="margin-bottom: 2rem;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: var(--qz-purple); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">Жаңа ойын</div>
+            <h1 style="font-size: 1.5rem; font-weight: 800;">Ойын атауын енгізіңіз</h1>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="gtype" value="{{ gtype }}">
+            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--qz-text-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Атауы</label>
+            <input type="text" name="title" required autofocus
+                   placeholder="Мысалы: 6-сынып. Көбейту кестесі"
+                   style="width: 100%; padding: 0.875rem 1rem; border: 1.5px solid var(--qz-purple-border); border-radius: 8px; font-size: 1rem; font-weight: 600; outline: none; transition: border-color 0.2s; font-family: 'Inter', sans-serif; margin-bottom: 1.5rem; background: var(--qz-purple-soft);">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.875rem; font-size: 0.9375rem;">
+                <i class="ph-duotone ph-arrow-right"></i> Жалғастыру
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

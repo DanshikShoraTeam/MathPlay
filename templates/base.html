@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MathPlay{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --violet: #6d28d9;
+            --violet-dark: #4c1d95;
+            --violet-mid: #8b5cf6;
+            --violet-light: #ede9fe;
+            --violet-pale: #f5f3ff;
+            --ink: #0f0a1e;
+            --ink-mid: #2d1b69;
+            --gray: #6b7280;
+            --gray-light: #f3f4f6;
+            --border: #e9e4f8;
+            --white: #ffffff;
+            --sidebar-w: 260px;
+            
+            /* Legacy mappings to prevent breakage */
+            --qz-purple: var(--violet);
+            --qz-purple-soft: var(--violet-pale);
+            --qz-purple-border: var(--border);
+            --qz-text: var(--ink);
+            --qz-text-light: var(--gray);
+            --qz-bg: white;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'DM Sans', sans-serif; 
+            background-color: #f7f6fb; 
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-wrapper { display: flex; min-height: 100vh; }
+        
+        /* ── SIDEBAR (Claude Design) ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            min-height: 100vh;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 16px;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 8px;
+            margin-bottom: 36px;
+            text-decoration: none;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--violet);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+            color: white;
+        }
+        .logo-text {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800; font-size: 18px;
+            color: var(--violet-dark);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            text-decoration: none;
+            color: var(--gray);
+            font-size: 15px; font-weight: 600;
+        }
+        .nav-item:hover {
+            background: var(--violet-pale);
+            color: var(--violet);
+        }
+        .nav-item.active {
+            background: var(--violet-light);
+            color: var(--violet);
+            font-weight: 700;
+        }
+        .nav-icon { font-size: 20px; flex-shrink: 0; }
+        .nav-label { flex: 1; }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 12px 8px;
+        }
+
+        .sidebar-user {
+            padding: 14px;
+            border-radius: 14px;
+            background: var(--violet-pale);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none;
+            transition: background 0.18s;
+        }
+        .sidebar-user:hover { background: var(--violet-light); }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            background: var(--violet);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700; font-size: 15px;
+            color: white; flex-shrink: 0;
+        }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name {
+            font-size: 13px; font-weight: 600; color: var(--ink);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .user-role { font-size: 11px; color: var(--gray); margin-top: 1px; }
+        .user-signout { color: var(--gray); font-size: 18px; transition: color 0.2s; }
+        .user-signout:hover { color: var(--violet); }
+
+        /* ── MAIN CONTENT ── */
+        .main-content { 
+            flex: 1; 
+            margin-left: var(--sidebar-w); 
+            padding: 40px;
+            width: 100%;
+        }
+
+        .main-content.full-mode { 
+            margin-left: 0 !important; 
+            padding: 0 !important; 
+        }
+
+        /* Legacy Button Mappings */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 12px 20px; border-radius: 12px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; border: none; text-decoration: none;
+            gap: 8px; font-family: inherit;
+        }
+        .btn-primary { background: var(--violet); color: white; }
+        .btn-primary:hover { background: var(--violet-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25); }
+
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; }
+        .page-title { font-family: 'Sora', sans-serif; font-size: 1.75rem; font-weight: 800; color: var(--ink); margin-bottom: 0.25rem; }
+        .page-subtitle { color: var(--gray); font-weight: 500; font-size: 14px; }
+
+        /* ── DASHBOARD COMPONENTS ── */
+        .stats-row { display: flex; gap: 1.25rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+        .stat-card {
+            background: white; padding: 1.25rem; border-radius: 16px;
+            flex: 1; min-width: 220px; border: 1px solid var(--border);
+            display: flex; align-items: center; gap: 1.25rem;
+            box-shadow: 0 2px 8px rgba(109, 40, 217, 0.04); transition: all 0.2s ease;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(109, 40, 217, 0.08); }
+        .stat-icon { 
+            width: 48px; height: 48px; border-radius: 14px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.5rem; background: var(--violet-pale); color: var(--violet);
+            flex-shrink: 0;
+        }
+        .stat-info { display: flex; flex-direction: column; }
+        .stat-label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.25rem; font-weight: 800; color: var(--ink); }
+
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .qz-card {
+            background: white; border-radius: 24px; padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; display: flex; flex-direction: column;
+            position: relative; text-decoration: none; overflow: hidden;
+        }
+        .qz-card:hover { transform: translateY(-6px); box-shadow: 0 15px 35px rgba(109, 40, 217, 0.12); border-color: var(--violet); }
+        .qz-card-title { font-size: 1.15rem; font-weight: 800; color: var(--ink); margin: 1.25rem 0 1.5rem; line-height: 1.4; }
+        
+        .badge { 
+            display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; 
+            font-size: 11px; font-weight: 800; background: var(--violet-pale); 
+            color: var(--violet); text-transform: uppercase; letter-spacing: 0.02em;
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        {% if not hide_sidebar %}
+        <aside class="sidebar">
+            <a href="{% url 'homepage' %}" class="sidebar-logo">
+                <div class="logo-icon"><i class="ph-bold ph-lightning"></i></div>
+                <span class="logo-text">MathPlay</span>
+            </a>
+
+            <nav class="sidebar-nav">
+                <a href="{% url 'homepage' %}" class="nav-item">
+                    <i class="ph-bold ph-house nav-icon"></i>
+                    <span class="nav-label">Басты бет</span>
+                </a>
+                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="ph-bold ph-game-controller nav-icon"></i>
+                    <span class="nav-label">Менің ойындарым</span>
+                </a>
+                <a href="{% url 'full_stats' %}" class="nav-item {% if request.resolver_match.url_name == 'full_stats' %}active{% endif %}">
+                    <i class="ph-bold ph-chart-bar nav-icon"></i>
+                    <span class="nav-label">Статистика</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-divider"></div>
+
+            <a href="{% url 'logout' %}" class="sidebar-user">
+                <div class="user-avatar">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-role">Мұғалім</div>
+                </div>
+                <i class="ph-bold ph-sign-out user-signout"></i>
+            </a>
+        </aside>
+        {% endif %}
+
+        <main class="main-content {% if hide_sidebar %}full-mode{% endif %}">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

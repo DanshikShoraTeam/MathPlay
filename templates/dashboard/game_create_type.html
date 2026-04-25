@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Ойын түрін таңдау — MathPlay{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--qz-text); margin-bottom: 0.5rem;">Ойын форматын таңдаңыз</h1>
+        <p style="color: var(--qz-text-light); font-size: 0.875rem;">Оқушыларыңыз үшін тиімді форматты таңдаңыз</p>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        <a href="{% url 'game_create_form' 'froggy' %}" class="qz-card" style="text-decoration: none; text-align: center; padding: 2rem 1rem;">
+            <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;">
+                <i class="ph-duotone ph-leaf"></i>
+            </div>
+            <h3 style="font-size: 1rem; font-weight: 800; color: var(--qz-text); margin-bottom: 0.5rem;">Froggy Jumps</h3>
+            <p style="color: var(--qz-text-light); font-size: 0.8125rem; line-height: 1.4;">Бақаны секірту арқылы оқыту.</p>
+        </a>
+
+        <a href="{% url 'game_create_form' 'quiz' %}" class="qz-card" style="text-decoration: none; text-align: center; padding: 2rem 1rem;">
+            <div style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 1rem;">
+                <i class="ph-duotone ph-lightbulb"></i>
+            </div>
+            <h3 style="font-size: 1rem; font-weight: 800; color: var(--qz-text); margin-bottom: 0.5rem;">Quiz</h3>
+            <p style="color: var(--qz-text-light); font-size: 0.8125rem; line-height: 1.4;">Классикалық тест форматы.</p>
+        </a>
+
+        <a href="{% url 'game_create_form' 'memory' %}" class="qz-card" style="text-decoration: none; text-align: center; padding: 2rem 1rem;">
+            <div style="font-size: 2.5rem; color: #7c3aed; margin-bottom: 1rem;">
+                <i class="ph-duotone ph-brain"></i>
+            </div>
+            <h3 style="font-size: 1rem; font-weight: 800; color: var(--qz-text); margin-bottom: 0.5rem;">Memory</h3>
+            <p style="color: var(--qz-text-light); font-size: 0.8125rem; line-height: 1.4;">Есте сақтау қабілетін дамыту.</p>
+        </a>
+
+        <a href="{% url 'game_create_form' 'match' %}" class="qz-card" style="text-decoration: none; text-align: center; padding: 2rem 1rem;">
+            <div style="font-size: 2.5rem; color: #00c4cc; margin-bottom: 1rem;">
+                <i class="ph-duotone ph-puzzle-piece"></i>
+            </div>
+            <h3 style="font-size: 1rem; font-weight: 800; color: var(--qz-text); margin-bottom: 0.5rem;">Match</h3>
+            <p style="color: var(--qz-text-light); font-size: 0.8125rem; line-height: 1.4;">Жылдамдыққа арналған жұптар.</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

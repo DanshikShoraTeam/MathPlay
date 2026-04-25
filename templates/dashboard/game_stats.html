@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Нәтижелер — {{ game.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-box { background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid var(--qz-purple-border); box-shadow: var(--qz-shadow-sm); }
+    
+    .mini-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--qz-purple-border); }
+    .mini-table th { background: var(--qz-purple-soft); text-align: left; padding: 0.75rem 1rem; font-size: 0.7rem; font-weight: 800; color: var(--qz-purple); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--qz-purple-border); }
+    .mini-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--qz-purple-border); font-size: 0.8125rem; color: var(--qz-text); }
+    
+    .status-pill { padding: 3px 10px; border-radius: 100px; font-weight: 700; font-size: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+        <a href="{% url 'dashboard' %}" style="text-decoration: none; color: var(--qz-purple); font-weight: 700; font-size: 0.8125rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i class="ph-bold ph-arrow-left"></i> Артқа
+        </a>
+        <span class="badge">{{ game.get_game_type_display }}</span>
+    </div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">{{ game.title }}</h1>
+</div>
+
+<!-- Serious & Miniature Stats -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fdf2f2; color: #ef4444;">
+            <i class="ph-duotone ph-trophy"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Макс. балл</span>
+            <span class="stat-value">{{ stats.max_score }}%</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: var(--qz-purple-soft); color: var(--qz-purple);">
+            <i class="ph-duotone ph-chart-line-up"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Орташа нәтиже</span>
+            <span class="stat-value">{{ stats.avg_score|floatformat:0 }}%</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #f0fdf4; color: #10b981;">
+            <i class="ph-duotone ph-play"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Әрекеттер</span>
+            <span class="stat-value">{{ sessions|length }}</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fff9f0; color: #f59e0b;">
+            <i class="ph-duotone ph-timer"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Орта уақыт</span>
+            <span class="stat-value">{{ stats.avg_time|floatformat:0 }}с</span>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="chart-box">
+        <h3 style="font-size: 0.875rem; font-weight: 800; margin-bottom: 1rem;">Оқушылар үлгерімі</h3>
+        <canvas id="scoresBarChart" height="200"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3 style="font-size: 0.875rem; font-weight: 800; margin-bottom: 1rem;">Дұрыс жауаптар</h3>
+        <canvas id="answersDoughnutChart" height="200"></canvas>
+    </div>
+</div>
+
+<div>
+    <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Толық есеп</h3>
+    <table class="mini-table">
+        <thead>
+            <tr>
+                <th>Оқушы аты</th>
+                <th>Балл</th>
+                <th>Уақыт</th>
+                <th>Күні</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sessions %}
+            <tr>
+                <td style="font-weight: 700;">{{ s.student_name }}</td>
+                <td>
+                    <span class="status-pill" style="
+                        background: {% if s.score_percent >= 80 %}#f0fdf4; color: #166534;{% elif s.score_percent >= 40 %}#fffbeb; color: #92400e;{% else %}#fef2f2; color: #991b1b;{% endif %}">
+                        {{ s.score_percent }}%
+                    </span>
+                </td>
+                <td style="color: var(--qz-text-light);">{{ s.time_seconds }}с</td>
+                <td style="color: var(--qz-text-light);">{{ s.completed_at|date:"d.m.y, H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ chart_labels|safe }};
+    const scores = {{ chart_scores|safe }};
+
+    new Chart(document.getElementById('scoresBarChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: scores,
+                backgroundColor: '#7c3aed',
+                borderRadius: 4,
+                barThickness: 16
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: '#f0ebff' }, ticks: { font: { size: 10 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+
+    const avgScore = {{ stats.avg_score|floatformat:0 }};
+    new Chart(document.getElementById('answersDoughnutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Дұрыс', 'Қате'],
+            datasets: [{
+                data: [avgScore, 100 - avgScore],
+                backgroundColor: ['#7c3aed', '#f0ebff'],
+                borderWidth: 0,
+                cutout: '75%'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10, weight: '700' } } } }
+        }
+    });
+</script>
+{% endblock %}

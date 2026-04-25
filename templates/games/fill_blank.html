@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% block title %}Fill in the Blank — {{ game.title }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* Full-screen lilac bg */
+#game-root { width: 100%; display: flex; justify-content: center; }
+
+.fill-shell {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem 1rem;
+}
+
+/* Top progress */
+.top-bar {
+    width: 100%; max-width: 580px; margin-bottom: 1.5rem;
+}
+.prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.prog-label { font-size: 0.75rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.08em; }
+.prog-track { height: 6px; background: #ddd6fe; border-radius: 10px; overflow: hidden; }
+.prog-fill  { height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); border-radius: 10px; transition: width 0.5s ease; }
+
+/* Card */
+.fill-card {
+    background: white; border-radius: 24px;
+    padding: 2.5rem; width: 100%; max-width: 580px;
+    box-shadow: 0 20px 60px rgba(109,40,217,0.12), 0 4px 16px rgba(0,0,0,0.04);
+    position: relative; overflow: hidden;
+}
+
+/* Equation row */
+.eq-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.625rem; flex-wrap: wrap; margin-bottom: 1.75rem; min-height: 80px;
+}
+.eq-text { font-size: 2.2rem; font-weight: 900; color: #1e1b4b; }
+.eq-input {
+    width: 130px; font-size: 2.2rem; font-weight: 900; color: #7c3aed;
+    border: none; border-bottom: 3px solid #7c3aed; background: transparent;
+    text-align: center; outline: none; transition: all 0.25s;
+    font-family: 'Inter', sans-serif;
+    -webkit-appearance: none;
+}
+.eq-input::placeholder { color: #c4b5fd; }
+.eq-input:focus { border-color: #5b21b6; color: #5b21b6; }
+.eq-input.ok  { border-color: #10b981; color: #10b981; animation: none; }
+.eq-input.err { border-color: #ef4444; color: #ef4444; animation: shake 0.4s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px)} 60%{transform:translateX(12px)} 80%{transform:translateX(-6px)} }
+
+/* Hint */
+.hint { min-height: 1.6rem; font-size: 0.9rem; font-weight: 700; color: #6b7280; margin-bottom: 1.5rem; text-align: center; }
+.hint.ok-hint  { color: #10b981; }
+.hint.err-hint { color: #ef4444; }
+
+/* Button */
+.check-btn {
+    width: 100%; padding: 1rem; background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 800;
+    cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+}
+.check-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.4); }
+.check-btn:active { transform: translateY(0); }
+
+/* SVG check */
+.check-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 0;
+}
+.check-overlay.show { animation: checkPop 0.7s forwards; }
+@keyframes checkPop { 0%{opacity:0;transform:scale(0.4)} 40%{opacity:1;transform:scale(1.1)} 70%{opacity:1;transform:scale(1)} 100%{opacity:0} }
+.chk-c { fill:none; stroke:#10b981; stroke-width:5; stroke-dasharray:200; stroke-dashoffset:200; animation:drawC 0.4s ease forwards; }
+.chk-m { fill:none; stroke:#10b981; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:50; stroke-dashoffset:50; animation:drawM 0.3s ease 0.3s forwards; }
+@keyframes drawC { to{stroke-dashoffset:0} }
+@keyframes drawM { to{stroke-dashoffset:0} }
+
+/* XP toast */
+.xp-toast {
+    position: absolute; top: 1rem; right: 1rem;
+    background: linear-gradient(135deg,#7c3aed,#5b21b6); color: white;
+    padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 800;
+    animation: toastPop 1.5s forwards;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.4);
+}
+@keyframes toastPop { 0%{opacity:0;transform:translateY(8px)} 20%{opacity:1;transform:translateY(0)} 80%{opacity:1} 100%{opacity:0} }
+
+/* Slide transitions */
+.fill-card.slide-out { animation: slideOut 0.25s ease forwards; }
+.fill-card.slide-in  { animation: slideIn  0.25s ease forwards; }
+@keyframes slideOut { to{opacity:0;transform:translateX(-50px)} }
+@keyframes slideIn  { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
+
+/* Music btn */
+.music-btn {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    width: 44px; height: 44px; background: white; border-radius: 50%;
+    border: 2px solid #ddd6fe; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: #7c3aed; font-size: 1.25rem; z-index: 200; transition: all 0.2s;
+}
+.music-btn:hover { transform: scale(1.1); }
+
+/* Responsive */
+@media (max-width: 600px) {
+    .eq-text, .eq-input { font-size: 1.6rem; }
+    .eq-input { width: 100px; }
+    .fill-card { padding: 1.75rem 1.25rem; border-radius: 18px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-center" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ddd6fe 100%)">
+<div id="game-root">
+    <div class="fill-shell">
+        <div class="top-bar">
+            <div class="prog-row">
+                <span class="prog-label">Сұрақ <span id="qNum">1</span> / {{ game.questions|length }}</span>
+                <span class="prog-label" id="scoreVal">0 XP</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        </div>
+
+        <div class="fill-card" id="card">
+            <div class="check-overlay" id="checkOv">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                    <circle class="chk-c" cx="55" cy="55" r="42"/>
+                    <polyline class="chk-m" points="33,57 50,74 80,38"/>
+                </svg>
+            </div>
+
+            <div class="eq-row" id="eqRow">
+                <span class="eq-text" id="qText">...</span>
+                <input type="text" id="answer" class="eq-input" placeholder="?" autocomplete="off" inputmode="numeric">
+            </div>
+
+            <div class="hint" id="hint"></div>
+
+            <button class="check-btn" id="subBtn">
+                <i class="ph-duotone ph-check-circle"></i> Тексеру
+            </button>
+        </div>
+    </div>
+</div>
+
+<button class="music-btn" id="musicBtn" title="Музыка">
+    <i class="ph-duotone ph-music-note" id="musicIcon"></i>
+</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const questions = {{ game.questions|safe }};
+const total = questions.length;
+let current = 0, score = 0, waiting = false, startTime = Date.now();
+
+// ── Audio ──
+const AC = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAC() { if (!audioCtx) audioCtx = new AC(); return audioCtx; }
+
+function sfx(freq, dur, type='sine', vol=0.15) {
+    try { const c=getAC(),o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.type=type;o.frequency.value=freq; g.gain.setValueAtTime(vol,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur); o.start();o.stop(c.currentTime+dur); } catch(e){}
+}
+const soundOk  = () => { sfx(880,0.08); setTimeout(()=>sfx(1100,0.1),80); };
+const soundErr = () => sfx(220,0.25,'sawtooth',0.1);
+const soundEnd = () => [523,659,784,1047].forEach((f,i)=>setTimeout(()=>sfx(f,0.22),i*130));
+
+// ── Calm study BG music ──
+let bgInt = null, bgOn = true, bgStep = 0;
+const CALM = [392,440,392,349,392,440,494,440]; // calm repeating melody
+function playBg(freq, vol=0.04, type='sine') {
+    try { const c=getAC(),o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.type=type;o.frequency.value=freq; g.gain.setValueAtTime(vol,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.35); o.start();o.stop(c.currentTime+0.4); } catch(e){}
+}
+function startBg() {
+    if (bgInt) return;
+    bgInt = setInterval(() => { if(bgOn){ playBg(CALM[bgStep%CALM.length],0.04,'triangle'); if(bgStep%4===0) playBg(CALM[bgStep%CALM.length]/2,0.03,'sine'); bgStep++; } }, 400);
+}
+document.getElementById('musicBtn').onclick = () => {
+    getAC(); bgOn = !bgOn;
+    document.getElementById('musicIcon').className = bgOn ? 'ph-duotone ph-music-note' : 'ph-duotone ph-music-note-slash';
+    startBg();
+};
+
+// ── Game ──
+function showQ() {
+    if (current >= total) { endGame(); return; }
+    const q = questions[current];
+    const pct = (current / total) * 100;
+    document.getElementById('qNum').textContent = current + 1;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('qText').textContent = q.q;
+    document.getElementById('hint').textContent = '';
+    document.getElementById('hint').className = 'hint';
+    const inp = document.getElementById('answer');
+    inp.value = ''; inp.className = 'eq-input';
+    setTimeout(() => inp.focus(), 100);
+    waiting = false;
+}
+
+function normalize(v) {
+    const n = parseFloat(String(v).trim().replace(',','.'));
+    return isNaN(n) ? String(v).trim().toLowerCase() : String(n);
+}
+
+function check() {
+    if (waiting) return;
+    const q = questions[current];
+    const inp = document.getElementById('answer');
+    const val = inp.value;
+    if (!val.trim()) return;
+    waiting = true;
+    getAC(); startBg();
+
+    const ok = normalize(val) === normalize(q.a);
+
+    if (ok) {
+        soundOk(); score += 10;
+        document.getElementById('scoreVal').textContent = score + ' XP';
+        inp.classList.add('ok');
+        const ov = document.getElementById('checkOv');
+        ov.classList.add('show');
+        const t = document.createElement('div'); t.className='xp-toast'; t.textContent='+10 XP';
+        document.getElementById('card').appendChild(t);
+        setTimeout(() => { t.remove(); ov.classList.remove('show'); nextQ(); }, 1000);
+    } else {
+        soundErr();
+        inp.classList.add('err');
+        const h = document.getElementById('hint');
+        h.className = 'hint err-hint'; h.textContent = 'Дұрыс жауап: ' + q.a;
+        setTimeout(() => nextQ(), 2000);
+    }
+}
+
+function nextQ() {
+    const card = document.getElementById('card');
+    card.classList.add('slide-out');
+    setTimeout(() => {
+        card.classList.remove('slide-out');
+        card.classList.add('slide-in');
+        current++;
+        showQ();
+        setTimeout(() => card.classList.remove('slide-in'), 300);
+    }, 250);
+}
+
+document.getElementById('subBtn').onclick = () => { getAC(); check(); };
+document.getElementById('answer').addEventListener('keydown', e => { if (e.key==='Enter') { getAC(); check(); } });
+
+async function endGame() {
+    soundEnd();
+    if (bgInt) { clearInterval(bgInt); bgInt = null; }
+    const data = { score_percent: Math.round((score/total)*10), xp: score, time_seconds: Math.floor((Date.now()-startTime)/1000) };
+    try {
+        const r = await fetch(location.href, {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'}, body:JSON.stringify(data)});
+        const j = await r.json();
+        location.href = '/play/{{ game.publish_code }}/result/'+j.session_id+'/';
+    } catch(e){ console.error(e); }
+}
+
+showQ();
+</script>
+{% endblock %}

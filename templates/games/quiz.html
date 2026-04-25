@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block title %}Quiz — {{ game.title }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* ── Full-screen lilac overlay ── */
+#game-root { width: 100%; display: flex; justify-content: center; }
+
+/* ── Card ── */
+.quiz-card {
+    background: white; border-radius: 28px; padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(109,40,217,0.12), 0 4px 16px rgba(0,0,0,0.04);
+    width: 100%; max-width: 660px;
+}
+
+/* ── Header ── */
+.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.q-counter {
+    font-size: 0.8rem; font-weight: 800; color: #7c3aed;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    background: #ede9fe; padding: 4px 12px; border-radius: 20px;
+}
+.q-score {
+    font-size: 0.8rem; font-weight: 800; color: #6d28d9;
+    display: flex; align-items: center; gap: 5px;
+}
+.q-score i { font-size: 1rem; color: #a78bfa; }
+
+/* SVG circular timer */
+.svg-timer { position: relative; width: 58px; height: 58px; }
+.svg-timer svg { transform: rotate(-90deg); display: block; }
+.timer-bg   { fill: none; stroke: #ede9fe; stroke-width: 5; }
+.timer-ring { fill: none; stroke: #7c3aed; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 160; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+.timer-num  { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; color: #5b21b6; }
+
+/* Progress bar */
+.q-progress { height: 4px; background: #ede9fe; border-radius: 10px; margin-bottom: 1.75rem; overflow: hidden; }
+.q-prog-fill { height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); border-radius: 10px; transition: width 0.5s ease; }
+
+/* Question text */
+#qText {
+    font-size: 1.875rem; font-weight: 900; color: #1e1b4b; text-align: center;
+    margin-bottom: 2.5rem; line-height: 1.3; min-height: 4rem;
+    transition: opacity 0.25s, transform 0.25s;
+}
+
+/* 2×2 grid */
+.opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.opt-btn {
+    padding: 1.25rem 1rem; border-radius: 16px;
+    border: 2.5px solid #e8e0ff; background: #faf8ff;
+    font-size: 1.125rem; font-weight: 800; color: #1e1b4b;
+    cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    text-align: center; position: relative;
+}
+.opt-btn:hover:not(:disabled) { border-color: #7c3aed; background: #ede9fe; transform: scale(1.03); box-shadow: 0 4px 16px rgba(124,58,237,0.15); }
+.opt-btn.correct { background: #10b981; border-color: #10b981; color: white; animation: pulseGreen 0.5s; }
+.opt-btn.wrong   { background: #ef4444; border-color: #ef4444; color: white; animation: btnShake 0.4s; }
+.opt-btn.dim     { background: #f8fafc; border-color: #e2e8f0; color: #cbd5e1; }
+.opt-btn:disabled { cursor: default; }
+@keyframes pulseGreen { 0%{box-shadow:0 0 0 0 rgba(16,185,129,0.6)} 60%{box-shadow:0 0 0 18px rgba(16,185,129,0)} 100%{box-shadow:0 0 0 0 rgba(16,185,129,0)} }
+@keyframes btnShake   { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+
+/* XP toast */
+.xp-toast {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: white; padding: 5px 14px; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 900; pointer-events: none;
+    animation: toastRise 1.2s forwards;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.4);
+}
+@keyframes toastRise { 0%{opacity:1;transform:translate(-50%,-50%)} 100%{opacity:0;transform:translate(-50%,-160%)} }
+
+/* Music control */
+.music-btn {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    width: 44px; height: 44px; background: white; border-radius: 50%;
+    border: 2px solid var(--qz-purple-border); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--qz-purple); font-size: 1.25rem; z-index: 200;
+    transition: all 0.2s;
+}
+.music-btn:hover { transform: scale(1.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-center" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ddd6fe 100%)">
+<div id="game-root">
+    <div class="quiz-card">
+        <div class="q-header">
+            <div class="q-counter">Сұрақ <span id="qNum">1</span> / {{ game.questions|length }}</div>
+            <div class="svg-timer">
+                <svg width="58" height="58" viewBox="0 0 58 58">
+                    <circle class="timer-bg"   cx="29" cy="29" r="25.5"/>
+                    <circle class="timer-ring" cx="29" cy="29" r="25.5" id="timerRing" stroke-dasharray="160"/>
+                </svg>
+                <div class="timer-num" id="timerNum">20</div>
+            </div>
+            <div class="q-score"><i class="ph-duotone ph-star"></i><span id="scoreVal">0</span> XP</div>
+        </div>
+
+        <div class="q-progress"><div id="progFill" class="q-prog-fill" style="width:0%"></div></div>
+
+        <div id="qText">...</div>
+
+        <div class="opts-grid" id="opts"></div>
+    </div>
+</div>
+
+<button class="music-btn" id="musicBtn" title="Музыка">
+    <i class="ph-duotone ph-music-note" id="musicIcon"></i>
+</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const questions = {{ game.questions|safe }};
+const total = questions.length;
+const TIMER_MAX = 20;
+const CIRC = 160;
+let current = 0, score = 0, timerVal, timerInt, locked = false;
+let startTime = Date.now();
+
+// ═══════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════
+const AC = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAC() { if (!audioCtx) audioCtx = new AC(); return audioCtx; }
+
+// SFX
+function sfx(freq, dur, type='sine', vol=0.18) {
+    try {
+        const c = getAC(), o = c.createOscillator(), g = c.createGain();
+        o.connect(g); g.connect(c.destination);
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(vol, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+        o.start(); o.stop(c.currentTime + dur);
+    } catch(e) {}
+}
+function soundCorrect() { sfx(880, 0.07); setTimeout(() => sfx(1100, 0.1), 70); }
+function soundWrong()   { sfx(200, 0.28, 'sawtooth', 0.12); }
+function soundComplete(){ [523,659,784,1047].forEach((f,i) => setTimeout(() => sfx(f, 0.25), i * 130)); }
+function soundTick()    { sfx(1200, 0.04, 'square', 0.05); }
+
+// ── Background Music (Quiz Show theme) ──
+let bgInterval = null, bgOn = true, bgStep = 0;
+// Upbeat quiz melody: ascending + bounce
+const BG_NOTES = [392,440,494,523,587,523,494,440, 523,587,659,698,784,698,659,587];
+const BG_BASS  = [196,196,220,220,261,261,247,247,  261,261,329,329,392,392,349,349];
+
+function playBgNote(freq, vol = 0.06, type = 'square') {
+    try {
+        const c = getAC(), o = c.createOscillator(), g = c.createGain(), lp = c.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 2000;
+        o.connect(lp); lp.connect(g); g.connect(c.destination);
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(vol, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.18);
+        o.start(); o.stop(c.currentTime + 0.2);
+    } catch(e) {}
+}
+
+function startBg() {
+    if (bgInterval) return;
+    bgInterval = setInterval(() => {
+        if (!bgOn) return;
+        playBgNote(BG_NOTES[bgStep % BG_NOTES.length], 0.055, 'square');
+        if (bgStep % 2 === 0) playBgNote(BG_BASS[bgStep % BG_BASS.length], 0.04, 'triangle');
+        bgStep++;
+    }, 220);
+}
+
+function toggleMusic() {
+    bgOn = !bgOn;
+    document.getElementById('musicIcon').className = bgOn ? 'ph-duotone ph-music-note' : 'ph-duotone ph-music-note-slash';
+    if (bgOn) startBg();
+}
+
+document.getElementById('musicBtn').onclick = () => {
+    getAC(); // unlock audio context
+    toggleMusic();
+};
+
+// ═══════════════════════════════════
+// GAME LOGIC
+// ═══════════════════════════════════
+function showQ() {
+    if (current >= total) { endGame(); return; }
+    const q = questions[current];
+    document.getElementById('qNum').textContent = current + 1;
+    document.getElementById('progFill').style.width = ((current / total) * 100) + '%';
+
+    const qEl = document.getElementById('qText');
+    qEl.style.opacity = '0'; qEl.style.transform = 'translateY(12px)';
+    setTimeout(() => {
+        qEl.textContent = q.q;
+        qEl.style.transition = 'all 0.3s'; qEl.style.opacity = '1'; qEl.style.transform = 'translateY(0)';
+    }, 250);
+
+    const opts = [q.a, ...(q.wrong || [])].sort(() => Math.random() - 0.5).slice(0, 4);
+    while (opts.length < 4) opts.push('—');
+
+    const div = document.getElementById('opts');
+    div.innerHTML = '';
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn'; btn.textContent = opt;
+        btn.onclick = () => { getAC(); pick(opt, btn, q.a, div); };
+        div.appendChild(btn);
+    });
+
+    resetTimer(); locked = false;
+    // Start music on first interaction
+    startBg();
+}
+
+function pick(val, btn, answer, container) {
+    if (locked) return; locked = true;
+    clearInterval(timerInt);
+
+    if (val === answer) {
+        soundCorrect();
+        btn.classList.add('correct');
+        score += 10;
+        document.getElementById('scoreVal').textContent = score;
+        spawnToast(btn, '+10 XP');
+        container.querySelectorAll('.opt-btn').forEach(b => { if (b !== btn) b.classList.add('dim'); b.disabled = true; });
+        setTimeout(() => { current++; showQ(); }, 1500);
+    } else {
+        soundWrong();
+        btn.classList.add('wrong');
+        container.querySelectorAll('.opt-btn').forEach(b => {
+            b.disabled = true;
+            if (b.textContent === answer) b.classList.add('correct');
+            else if (b !== btn) b.classList.add('dim');
+        });
+        setTimeout(() => { current++; showQ(); }, 2000);
+    }
+}
+
+function spawnToast(btn, text) {
+    const t = document.createElement('div');
+    t.className = 'xp-toast'; t.textContent = text;
+    btn.style.position = 'relative'; btn.appendChild(t);
+    setTimeout(() => t.remove(), 1200);
+}
+
+function resetTimer() {
+    clearInterval(timerInt); timerVal = TIMER_MAX;
+    const ring = document.getElementById('timerRing');
+    ring.style.stroke = '#7c3aed'; ring.style.strokeDashoffset = '0';
+    document.getElementById('timerNum').textContent = TIMER_MAX;
+    timerInt = setInterval(() => {
+        timerVal--;
+        const offset = (timerVal / TIMER_MAX) * CIRC;
+        ring.style.strokeDashoffset = CIRC - offset;
+        document.getElementById('timerNum').textContent = timerVal;
+        if (timerVal <= 5) { ring.style.stroke = '#ef4444'; soundTick(); }
+        if (timerVal <= 0) { clearInterval(timerInt); if (!locked) { locked = true; soundWrong(); current++; showQ(); } }
+    }, 1000);
+}
+
+async function endGame() {
+    soundComplete();
+    clearInterval(timerInt);
+    if (bgInterval) { clearInterval(bgInterval); bgInterval = null; }
+    const data = { score_percent: Math.round((score / (total * 10)) * 100), xp: score, time_seconds: Math.floor((Date.now() - startTime) / 1000) };
+    try {
+        const r = await fetch(location.href, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }, body: JSON.stringify(data) });
+        const j = await r.json();
+        location.href = '/play/{{ game.publish_code }}/result/' + j.session_id + '/';
+    } catch(e) { console.error(e); }
+}
+
+showQ();
+</script>
+{% endblock %}
