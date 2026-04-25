@@ -5,7 +5,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-new-forced-reset-key-123'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000', 
+    'http://localhost:8000',
+    'http://*.168.*:*',
+    'http://0.0.0.0:8000'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',

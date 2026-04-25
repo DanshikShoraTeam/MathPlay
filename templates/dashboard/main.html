@@ -172,6 +172,17 @@ async function deleteGame(pk) {
     } catch(e) { console.error(e); }
 }
 
+async function publishGame(pk) {
+    // Use the server-provided local_ip if currently on localhost
+    let origin = window.location.origin;
+    const localIp = "{{ local_ip }}";
+    if ((origin.includes('localhost') || origin.includes('127.0.0.1')) && localIp !== '127.0.0.1') {
+        origin = "http://" + localIp + ":8000";
+    }
+    const link = origin + "/play/MP" + pk + "/";
+    showModal("MP" + pk, link);
+}
+
 function getCookie(name) {
     const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return v ? v.pop() : '';

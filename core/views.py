@@ -7,6 +7,20 @@ from django.db.models import Avg, Count, Sum, Max, Q
 from django.views.decorators.csrf import csrf_exempt
 from .models import Game, GameSession, StudentProfile
 from django.contrib.auth.models import User
+import socket
+
+def get_local_ip():
+    """Returns the local network IP address of the server."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Doesn't need to be reachable, just to determine the interface
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
 
 
 # ═══════════════════════════════════════════════════════
@@ -155,7 +169,11 @@ def dashboard(request):
         'total_sessions': sessions.values('student_name').distinct().count(),
         'avg_score': sessions.aggregate(Avg('score_percent'))['score_percent__avg'] or 0,
     }
-    return render(request, 'dashboard/main.html', {'games': games, 'stats': stats})
+    return render(request, 'dashboard/main.html', {
+        'games': games, 
+        'stats': stats,
+        'local_ip': get_local_ip()
+    })
 
 
 @login_required
