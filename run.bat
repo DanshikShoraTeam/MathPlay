@@ -1,32 +1,32 @@
 @echo off
 title MathPlay Launcher
 echo ------------------------------------------------
-echo 🚀 MathPlay iske qosyluda...
+echo  MathPlay iske qosyluda...
 echo ------------------------------------------------
 
 :: 1. Python check
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [!] Python tanylmady. Python.org-tan ornatylyp, "Add to PATH" belgilenui tiis!
+    echo [!] Python tanylmady. Python.org-tan ornatyp, "Add to PATH" belgileniui tiis!
     pause
-    exit
+    exit /b
 )
 
 :: 2. Venv check
 if not exist "venv\Scripts\python.exe" (
-    echo [!] Virtuallik orta (venv) tabilmady. Kuriluda...
+    echo [!] Virtuallik orta tabilmady. Quiluda...
     python -m venv venv
     if %errorlevel% neq 0 (
         echo [!] Qate: venv quru mumkin bolmady.
         pause
-        exit
+        exit /b
     )
 )
 
 :: 3. Install requirements
-echo [!] Kitaphanalardy tekseru (Django, qrcode)...
-venv\Scripts\python.exe -m pip install --upgrade pip
-venv\Scripts\python.exe -m pip install -r requirements.txt
+echo [!] Kitaphanalardy tekseru...
+venv\Scripts\python.exe -m pip install --upgrade pip --quiet
+venv\Scripts\python.exe -m pip install -r requirements.txt --quiet
 
 :: 4. Double check Django
 venv\Scripts\python.exe -c "import django" >nul 2>&1
@@ -44,7 +44,7 @@ echo [!] Browserdi ashu...
 start http://127.0.0.1:8000
 
 :: 7. Run server
-echo ✅ Sait daiyn! Browser ashyluy tiis.
+echo  Sait daiyn!
 echo ------------------------------------------------
 venv\Scripts\python.exe manage.py runserver 0.0.0.0:8000
 pause
