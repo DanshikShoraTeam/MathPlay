@@ -309,20 +309,39 @@ def student_list(request):
 # STUDENT / PLAY
 # ═══════════════════════════════════════════════════════
 
+def get_game_by_code(code, only_published=True):
+    """Helper to find game by publish_code or MP-id"""
+    # 1. Try by publish_code
+    game = Game.objects.filter(publish_code=code)
+    if only_published:
+        game = game.filter(is_published=True)
+    game = game.first()
+    
+    # 2. Try by ID (MPxx style)
+    if not game and code.startswith('MP'):
+        clean_id = code.replace('MP', '')
+        if clean_id.isdigit():
+            game = Game.objects.filter(pk=clean_id)
+            if only_published:
+                game = game.filter(is_published=True)
+            game = game.first()
+            
+    return game
+
+
 def play_entry(request, code):
-    clean_code = code.replace('MP', '') if code.startswith('MP') else code
-    try:
-        game = Game.objects.get(Q(publish_code=code) | Q(pk=clean_code))
-    except (Game.DoesNotExist, ValueError):
-        return render(request, 'student/game_not_found.html', {**{'code': code}, 'hide_sidebar': True}, status=404)
-    if not game.is_published:
-        return render(request, 'student/game_not_found.html', {**{'code': code}, 'hide_sidebar': True}, status=404)
-    return render(request, 'student/play_entry.html', {**{'game': game}, 'hide_sidebar': True})
+    game = get_game_by_code(code, only_published=True)
+    if not game:
+        return render(request, 'student/game_not_found.html', {'code': code, 'hide_sidebar': True}, status=404)
+    return render(request, 'student/play_entry.html', {'game': game, 'hide_sidebar': True})
 
 
 @csrf_exempt
 def play_game(request, code):
-    game = get_object_or_404(Game, publish_code=code, is_published=True)
+    game = get_game_by_code(code, only_published=True)
+    if not game:
+        return render(request, 'student/game_not_found.html', {'code': code, 'hide_sidebar': True}, status=404)
+
     student_name = request.GET.get('name', 'Оқушы')
 
     if request.method == 'POST':
@@ -347,7 +366,8 @@ def play_game(request, code):
 
 def play_result(request, code, session_id):
     session = get_object_or_404(GameSession, id=session_id)
-    return render(request, 'student/play_result.html', {**{
+    return render(request, 'student/play_result.html', {
         'session': session,
+        'code': code,
         'hide_sidebar': True,
-    }, 'hide_sidebar': True})
+    })
