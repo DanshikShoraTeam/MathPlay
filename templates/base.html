@@ -10,14 +10,14 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
-            /* Brand Colors */
+            /* Основные цвета бренда */
             --violet: #6d28d9;
             --violet-dark: #4c1d95;
             --violet-mid: #8b5cf6;
             --violet-light: #ede9fe;
             --violet-pale: #f5f3ff;
             
-            /* Neutral Palette */
+            /* Нейтральная палитра */
             --ink: #0f0a1e;
             --ink-mid: #2d1b69;
             --gray: #6b7280;
@@ -25,11 +25,11 @@
             --border: #e9e4f8;
             --white: #ffffff;
             
-            /* Sidebar Config */
+            /* Настройки боковой панели */
             --sidebar-width: 260px;
             --sidebar-collapsed-w: 84px;
 
-            /* Component Colors */
+            /* Цвета компонентов */
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
@@ -49,7 +49,7 @@
 
         .app-wrapper { display: flex; min-height: 100vh; }
         
-        /* ── SIDEBAR (Claude Design) ── */
+        /* ── БОКОВАЯ ПАНЕЛЬ ── */
         .sidebar {
             width: var(--sidebar-width);
             min-height: 100vh;
@@ -199,7 +199,7 @@
         .sidebar.collapsed .user-signout { display: none; }
         .user-signout:hover { color: var(--violet); }
 
-        /* ── MAIN CONTENT ── */
+        /* ── ОСНОВНОЙ КОНТЕНТ ── */
         .main-content { 
             flex: 1; 
             margin-left: var(--sidebar-width); 
@@ -214,7 +214,7 @@
             padding: 0 !important; 
         }
 
-        /* Legacy Button Mappings */
+        /* Стили кнопок */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 12px 20px; border-radius: 12px;
@@ -229,7 +229,7 @@
         .page-title { font-family: 'Sora', sans-serif; font-size: 1.75rem; font-weight: 800; color: var(--ink); margin-bottom: 0.25rem; }
         .page-subtitle { color: var(--gray); font-weight: 500; font-size: 14px; }
 
-        /* ── DASHBOARD COMPONENTS ── */
+        /* ── КОМПОНЕНТЫ ПАНЕЛИ УПРАВЛЕНИЯ ── */
         .stats-row { display: flex; gap: 1.25rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
         .stat-card {
             background: white; padding: 1.25rem; border-radius: 16px;
@@ -315,19 +315,20 @@
         </main>
     </div>
     <script>
-        // Sidebar Toggle Logic
+        // Логика переключения боковой панели
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const toggleIcon = document.getElementById('toggleIcon');
 
         if (sidebar && sidebarToggle) {
-            // Load state
+            // Загружаем сохраненное состояние панели из локального хранилища
             const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
             if (isCollapsed) {
                 sidebar.classList.add('collapsed');
                 document.body.classList.add('sidebar-collapsed');
             }
 
+            // Обработчик клика для переключения видимости панели
             sidebarToggle.addEventListener('click', () => {
                 const collapsed = sidebar.classList.toggle('collapsed');
                 document.body.classList.toggle('sidebar-collapsed', collapsed);

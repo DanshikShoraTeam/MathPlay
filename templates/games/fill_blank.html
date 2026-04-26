@@ -5,7 +5,7 @@
 {% block extra_css %}
 <style>
 
-/* Full-screen lilac bg */
+/* Полноэкранный фиолетовый фон */
 #game-root { width: 100%; display: flex; justify-content: center; }
 
 .fill-shell {
@@ -14,7 +14,7 @@
     padding: 2rem 1rem;
 }
 
-/* Top progress */
+/* Полоса прогресса вверху */
 .top-bar {
     width: 100%; max-width: 580px; margin-bottom: 1.5rem;
 }
@@ -23,7 +23,7 @@
 .prog-track { height: 6px; background: #ddd6fe; border-radius: 10px; overflow: hidden; }
 .prog-fill  { height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); border-radius: 10px; transition: width 0.5s ease; }
 
-/* Card */
+/* Карточка задания */
 .fill-card {
     background: white; border-radius: 24px;
     padding: 2.5rem; width: 100%; max-width: 580px;
@@ -31,7 +31,7 @@
     position: relative; overflow: hidden;
 }
 
-/* Equation row */
+/* Строка с уравнением/задачей */
 .eq-row {
     display: flex; align-items: center; justify-content: center;
     gap: 0.625rem; flex-wrap: wrap; margin-bottom: 1.75rem; min-height: 80px;
@@ -50,12 +50,12 @@
 .eq-input.err { border-color: #ef4444; color: #ef4444; animation: shake 0.4s; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px)} 60%{transform:translateX(12px)} 80%{transform:translateX(-6px)} }
 
-/* Hint */
+/* Подсказка */
 .hint { min-height: 1.6rem; font-size: 0.9rem; font-weight: 700; color: #6b7280; margin-bottom: 1.5rem; text-align: center; }
 .hint.ok-hint  { color: #10b981; }
 .hint.err-hint { color: #ef4444; }
 
-/* Button */
+/* Кнопка проверки */
 .check-btn {
     width: 100%; padding: 1rem; background: linear-gradient(135deg, #7c3aed, #5b21b6);
     color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 800;
@@ -66,7 +66,7 @@
 .check-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.4); }
 .check-btn:active { transform: translateY(0); }
 
-/* SVG check */
+/* Анимация галочки */
 .check-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     pointer-events: none; opacity: 0;
@@ -78,7 +78,7 @@
 @keyframes drawC { to{stroke-dashoffset:0} }
 @keyframes drawM { to{stroke-dashoffset:0} }
 
-/* XP toast */
+/* Всплывающее уведомление с очками */
 .xp-toast {
     position: absolute; top: 1rem; right: 1rem;
     background: linear-gradient(135deg,#7c3aed,#5b21b6); color: white;
@@ -88,13 +88,13 @@
 }
 @keyframes toastPop { 0%{opacity:0;transform:translateY(8px)} 20%{opacity:1;transform:translateY(0)} 80%{opacity:1} 100%{opacity:0} }
 
-/* Slide transitions */
+/* Анимация переходов между слайдами */
 .fill-card.slide-out { animation: slideOut 0.25s ease forwards; }
 .fill-card.slide-in  { animation: slideIn  0.25s ease forwards; }
 @keyframes slideOut { to{opacity:0;transform:translateX(-50px)} }
 @keyframes slideIn  { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
 
-/* Music btn */
+/* Кнопка музыки */
 .music-btn {
     position: fixed; bottom: 1.5rem; right: 1.5rem;
     width: 44px; height: 44px; background: white; border-radius: 50%;
@@ -104,7 +104,7 @@
 }
 .music-btn:hover { transform: scale(1.1); }
 
-/* Responsive */
+/* Адаптивный дизайн */
 @media (max-width: 600px) {
     .eq-text, .eq-input { font-size: 1.6rem; }
     .eq-input { width: 100px; }

@@ -9,11 +9,15 @@ from .models import Game, GameSession, StudentProfile
 from django.contrib.auth.models import User
 import socket
 
+# ═════════════════════════════════════════════════════════════
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ═════════════════════════════════════════════════════════════
+
 def get_local_ip():
-    """Returns the local network IP address of the server."""
+    """Возвращает локальный IP-адрес сервера в сети."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # Doesn't need to be reachable, just to determine the interface
+        # Не нужно быть доступным, только чтобы определить интерфейс
         s.connect(('10.255.255.255', 1))
         IP = s.getsockname()[0]
     except Exception:
@@ -23,9 +27,10 @@ def get_local_ip():
     return IP
 
 
-# ═══════════════════════════════════════════════════════
-# SAMPLE GAMES — 6-7 GRADE LEVEL (one per game type)
-# ═══════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════
+# ПРИМЕРЫ ИГР - УРОВЕНЬ 6-7 КЛАССА
+# (по одной игре каждого типа для демонстрации)
+# ═════════════════════════════════════════════════════════════
 SAMPLE_GAMES = [
     {
         'title': 'Алгебра негіздері — Quiz',
@@ -106,7 +111,9 @@ def create_sample_games(user):
 
 
 # ═══════════════════════════════════════════════════════
-# AUTH VIEWS
+# ═════════════════════════════════════════════════════════════
+# ПРЕДСТАВЛЕНИЯ АУТЕНТИФИКАЦИИ (Логин/Регистрация/Выход)
+# ═════════════════════════════════════════════════════════════
 # ═══════════════════════════════════════════════════════
 
 def homepage(request):
@@ -142,7 +149,7 @@ def register_view(request):
             error = 'Бұл қолданушы аты бос емес.'
         else:
             user = User.objects.create_user(username=u, password=p)
-            create_sample_games(user)   # Seed default games
+            create_sample_games(user)   # Создание примеров игр для нового пользователя
             login(request, user)
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'redirect': '/dashboard/'})
@@ -156,7 +163,9 @@ def logout_view(request):
 
 
 # ═══════════════════════════════════════════════════════
-# DASHBOARD
+# ═════════════════════════════════════════════════════════════
+# ПАНЕЛЬ УПРАВЛЕНИЯ (для учителей)
+# ═════════════════════════════════════════════════════════════
 # ═══════════════════════════════════════════════════════
 
 @login_required
@@ -263,7 +272,7 @@ def full_stats(request):
     games = Game.objects.filter(author=request.user)
     sessions = GameSession.objects.filter(game__in=games).order_by('-completed_at')
     
-    # Aggregates
+    # Агрегированные данные по всем играм
     stats = {
         'total_xp': sessions.aggregate(Sum('xp_earned'))['xp_earned__sum'] or 0,
         'total_plays': sessions.count(),
@@ -271,7 +280,7 @@ def full_stats(request):
         'total_time': sessions.aggregate(Sum('time_seconds'))['time_seconds__sum'] or 0,
     }
     
-    # Distribution by game type
+    # Распределение сеансов по типам игр
     type_labels = []
     type_data = []
     for gtype, name in Game.GAME_TYPES:
@@ -280,7 +289,7 @@ def full_stats(request):
             type_labels.append(name)
             type_data.append(count)
             
-    # Daily activity (last 7 days)
+    # Ежедневная активность (последние 7 дней)
     from django.utils import timezone
     import datetime
     daily_labels = []
@@ -306,18 +315,20 @@ def student_list(request):
 
 
 # ═══════════════════════════════════════════════════════
-# STUDENT / PLAY
+# ═════════════════════════════════════════════════════════════
+# ПРЕДСТАВЛЕНИЯ СТУДЕНТА / ИГРА (для игроков)
+# ═════════════════════════════════════════════════════════════
 # ═══════════════════════════════════════════════════════
 
 def get_game_by_code(code, only_published=True):
     """Helper to find game by publish_code or MP-id"""
-    # 1. Try by publish_code
+    # 1. Пробуем найти игру по коду публикации
     game = Game.objects.filter(publish_code=code)
     if only_published:
         game = game.filter(is_published=True)
     game = game.first()
     
-    # 2. Try by ID (MPxx style)
+    # 2. Пробуем найти по ID игры
     if not game and code.startswith('MP'):
         clean_id = code.replace('MP', '')
         if clean_id.isdigit():
