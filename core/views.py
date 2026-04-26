@@ -260,7 +260,44 @@ def game_stats(request, pk):
 
 @login_required
 def full_stats(request):
-    return render(request, 'dashboard/full_stats.html')
+    games = Game.objects.filter(author=request.user)
+    sessions = GameSession.objects.filter(game__in=games).order_by('-completed_at')
+    
+    # Aggregates
+    stats = {
+        'total_xp': sessions.aggregate(Sum('xp_earned'))['xp_earned__sum'] or 0,
+        'total_plays': sessions.count(),
+        'avg_score': sessions.aggregate(Avg('score_percent'))['score_percent__avg'] or 0,
+        'total_time': sessions.aggregate(Sum('time_seconds'))['time_seconds__sum'] or 0,
+    }
+    
+    # Distribution by game type
+    type_labels = []
+    type_data = []
+    for gtype, name in Game.GAME_TYPES:
+        count = sessions.filter(game__game_type=gtype).count()
+        if count > 0:
+            type_labels.append(name)
+            type_data.append(count)
+            
+    # Daily activity (last 7 days)
+    from django.utils import timezone
+    import datetime
+    daily_labels = []
+    daily_data = []
+    for i in range(6, -1, -1):
+        day = timezone.now().date() - datetime.timedelta(days=i)
+        daily_labels.append(day.strftime('%d.%m'))
+        daily_data.append(sessions.filter(completed_at__date=day).count())
+
+    return render(request, 'dashboard/full_stats.html', {
+        'stats': stats,
+        'recent_sessions': sessions[:15],
+        'type_labels': json.dumps(type_labels),
+        'type_data': json.dumps(type_data),
+        'daily_labels': json.dumps(daily_labels),
+        'daily_data': json.dumps(daily_data),
+    })
 
 
 @login_required

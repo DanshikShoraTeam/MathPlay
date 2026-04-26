@@ -48,7 +48,7 @@
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-9px)} 75%{transform:translateX(9px)} }
 
 /* SVG line */
-.match-line { stroke: #10b981; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-dasharray: 300; stroke-dashoffset: 300; animation: drawLine 0.55s ease forwards; opacity: 0.75; }
+.match-line { stroke: #10b981; stroke-width: 3; fill: none; stroke-linecap: round; opacity: 0.8; transition: stroke-dashoffset 0.6s ease; }
 @keyframes drawLine { to { stroke-dashoffset: 0; } }
 
 /* Music */
@@ -147,6 +147,12 @@ function renderCol(items, colId) {
 renderCol(left,  'leftCol');
 renderCol(right, 'rightCol');
 
+let lines = []; // Store line data for redrawing
+window.addEventListener('resize', () => {
+    document.getElementById('linesSvg').innerHTML = '';
+    lines.forEach(l => drawLine(l.a, l.b, false));
+});
+
 function pick(el) {
     if (el.classList.contains('matched')) return;
 
@@ -166,8 +172,10 @@ function pick(el) {
     // Evaluate
     if (selected.dataset.id === el.dataset.id) {
         soundMatch();
-        [selected, el].forEach(e => { e.classList.remove('selected'); e.classList.add('matched'); });
-        drawLine(selected, el);
+        const a = selected, b = el;
+        [a, b].forEach(e => { e.classList.remove('selected'); e.classList.add('matched'); });
+        drawLine(a, b);
+        lines.push({a, b});
         matched++;
         document.getElementById('matchedCount').textContent = matched;
         selected = null;
@@ -180,21 +188,40 @@ function pick(el) {
     }
 }
 
-function drawLine(elA, elB) {
+function drawLine(elA, elB, animate = true) {
     const svg = document.getElementById('linesSvg');
-    const boardRect = document.getElementById('board').getBoundingClientRect();
+    const board = document.getElementById('board');
+    const boardRect = board.getBoundingClientRect();
     const rA = elA.getBoundingClientRect(), rB = elB.getBoundingClientRect();
 
-    const x1 = rA.right  - boardRect.left;
-    const y1 = rA.top + rA.height / 2 - boardRect.top;
-    const x2 = rB.left   - boardRect.left;
-    const y2 = rB.top + rB.height / 2 - boardRect.top;
+    // Determine left and right items regardless of pick order
+    const isALeft = elA.dataset.side === 'q';
+    const leftRect = isALeft ? rA : rB;
+    const rightRect = isALeft ? rB : rA;
+
+    const x1 = leftRect.right - boardRect.left;
+    const y1 = leftRect.top + leftRect.height / 2 - boardRect.top;
+    const x2 = rightRect.left - boardRect.left;
+    const y2 = rightRect.top + rightRect.height / 2 - boardRect.top;
     const mx = (x1 + x2) / 2;
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+    const d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+    path.setAttribute('d', d);
     path.classList.add('match-line');
+    
     svg.appendChild(path);
+    
+    // Animate dash
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = length;
+    if (animate) {
+        path.style.strokeDashoffset = length;
+        path.getBoundingClientRect(); // trigger reflow
+        path.style.strokeDashoffset = '0';
+    } else {
+        path.style.strokeDashoffset = '0';
+    }
 }
 
 async function endGame() {

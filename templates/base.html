@@ -10,26 +10,29 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
+            /* Brand Colors */
             --violet: #6d28d9;
             --violet-dark: #4c1d95;
             --violet-mid: #8b5cf6;
             --violet-light: #ede9fe;
             --violet-pale: #f5f3ff;
+            
+            /* Neutral Palette */
             --ink: #0f0a1e;
             --ink-mid: #2d1b69;
             --gray: #6b7280;
             --gray-light: #f3f4f6;
             --border: #e9e4f8;
             --white: #ffffff;
-            --sidebar-w: 260px;
             
-            /* Legacy mappings to prevent breakage */
-            --qz-purple: var(--violet);
-            --qz-purple-soft: var(--violet-pale);
-            --qz-purple-border: var(--border);
-            --qz-text: var(--ink);
-            --qz-text-light: var(--gray);
-            --qz-bg: white;
+            /* Sidebar Config */
+            --sidebar-width: 260px;
+            --sidebar-collapsed-w: 84px;
+
+            /* Component Colors */
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,47 +43,80 @@
             color: var(--ink);
             -webkit-font-smoothing: antialiased;
         }
+        body.sidebar-collapsed {
+            --sidebar-width: var(--sidebar-collapsed-w);
+        }
 
         .app-wrapper { display: flex; min-height: 100vh; }
         
         /* ── SIDEBAR (Claude Design) ── */
         .sidebar {
-            width: var(--sidebar-w);
+            width: var(--sidebar-width);
             min-height: 100vh;
             background: var(--white);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 28px 16px;
+            padding: 24px 16px;
             position: fixed;
             top: 0; left: 0; bottom: 0;
             z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-w);
+            padding: 24px 12px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 32px;
+            padding: 0 4px;
+            gap: 12px;
         }
 
         .sidebar-logo {
-            display: flex; align-items: center; gap: 10px;
-            padding: 0 8px;
-            margin-bottom: 36px;
+            display: flex; align-items: center; gap: 12px;
             text-decoration: none;
+            min-width: 0;
         }
         .logo-icon {
-            width: 36px; height: 36px;
+            width: 38px; height: 38px;
             background: var(--violet);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0;
+            font-size: 20px; flex-shrink: 0;
             color: white;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        .logo-icon:hover {
+            transform: scale(1.05);
+            background: var(--violet-dark);
+        }
+        .sidebar.collapsed .logo-icon {
+            margin: 0 auto;
+        }
+
         .logo-text {
             font-family: 'Sora', sans-serif;
-            font-weight: 800; font-size: 18px;
+            font-weight: 800; font-size: 19px;
             color: var(--violet-dark);
+            transition: opacity 0.2s, transform 0.2s;
+            white-space: nowrap;
+        }
+        .sidebar.collapsed .logo-text {
+            display: none;
         }
 
         .sidebar-nav {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             flex: 1;
         }
 
@@ -89,10 +125,11 @@
             padding: 12px 14px;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.18s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
             color: var(--gray);
             font-size: 15px; font-weight: 600;
+            white-space: nowrap;
         }
         .nav-item:hover {
             background: var(--violet-pale);
@@ -103,52 +140,75 @@
             color: var(--violet);
             font-weight: 700;
         }
-        .nav-icon { font-size: 20px; flex-shrink: 0; }
-        .nav-label { flex: 1; }
+        .nav-icon { font-size: 22px; flex-shrink: 0; }
+        .nav-label { 
+            flex: 1; 
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .sidebar.collapsed .nav-label {
+            opacity: 0; pointer-events: none; transform: translateX(-10px);
+        }
 
         .sidebar-divider {
             height: 1px;
             background: var(--border);
-            margin: 12px 8px;
+            margin: 16px 8px;
         }
 
         .sidebar-user {
-            padding: 14px;
-            border-radius: 14px;
+            padding: 12px;
+            border-radius: 16px;
             background: var(--violet-pale);
             border: 1px solid var(--border);
             display: flex; align-items: center; gap: 12px;
             text-decoration: none;
-            transition: background 0.18s;
+            transition: all 0.2s;
+            overflow: hidden;
         }
         .sidebar-user:hover { background: var(--violet-light); }
+        .sidebar.collapsed .sidebar-user {
+            padding: 10px;
+            justify-content: center;
+        }
 
         .user-avatar {
-            width: 36px; height: 36px;
+            width: 38px; height: 38px;
             background: var(--violet);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Sora', sans-serif;
-            font-weight: 700; font-size: 15px;
+            font-weight: 700; font-size: 16px;
             color: white; flex-shrink: 0;
         }
-        .user-info { flex: 1; min-width: 0; }
+        .user-info { 
+            flex: 1; min-width: 0;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .sidebar.collapsed .user-info {
+            display: none;
+        }
         .user-name {
-            font-size: 13px; font-weight: 600; color: var(--ink);
+            font-size: 14px; font-weight: 700; color: var(--ink);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .user-role { font-size: 11px; color: var(--gray); margin-top: 1px; }
-        .user-signout { color: var(--gray); font-size: 18px; transition: color 0.2s; }
+        .user-signout { 
+            color: var(--gray); font-size: 20px; transition: color 0.2s; 
+            flex-shrink: 0;
+        }
+        .sidebar.collapsed .user-signout { display: none; }
         .user-signout:hover { color: var(--violet); }
 
         /* ── MAIN CONTENT ── */
         .main-content { 
             flex: 1; 
-            margin-left: var(--sidebar-w); 
+            margin-left: var(--sidebar-width); 
             padding: 40px;
             width: 100%;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .main-content.no-sidebar,
         .main-content.full-mode { 
             margin-left: 0 !important; 
             padding: 0 !important; 
@@ -212,11 +272,13 @@
 <body>
     <div class="app-wrapper">
         {% if not hide_sidebar %}
-        <aside class="sidebar">
-            <a href="{% url 'homepage' %}" class="sidebar-logo">
-                <div class="logo-icon"><i class="ph-bold ph-lightning"></i></div>
-                <span class="logo-text">MathPlay</span>
-            </a>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon" id="sidebarToggle"><i class="ph-bold ph-lightning"></i></div>
+                <a href="{% url 'homepage' %}" class="sidebar-logo">
+                    <span class="logo-text">MathPlay</span>
+                </a>
+            </div>
 
             <nav class="sidebar-nav">
                 <a href="{% url 'homepage' %}" class="nav-item">
@@ -248,10 +310,31 @@
         </aside>
         {% endif %}
 
-        <main class="main-content {% if hide_sidebar %}full-mode{% endif %}">
+        <main class="main-content {% if hide_sidebar %}no-sidebar{% endif %} {% if full_mode %}full-mode{% endif %}">
             {% block content %}{% endblock %}
         </main>
     </div>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (sidebar && sidebarToggle) {
+            // Load state
+            const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+                document.body.classList.add('sidebar-collapsed');
+            }
+
+            sidebarToggle.addEventListener('click', () => {
+                const collapsed = sidebar.classList.toggle('collapsed');
+                document.body.classList.toggle('sidebar-collapsed', collapsed);
+                localStorage.setItem('sidebar-collapsed', collapsed);
+            });
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

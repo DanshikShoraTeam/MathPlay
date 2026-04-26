@@ -3,100 +3,267 @@
 
 {% block extra_css %}
 <style>
-.editor-wrap { max-width: 900px; margin: 0 auto; padding-bottom: 6rem; }
+    .editor-wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding-bottom: 6rem;
+    }
 
-/* ── Header ── */
-.editor-head {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 2.5rem; gap: 1rem; flex-wrap: wrap;
-}
-.editor-head-left h1 {
-    font-size: 1.75rem; font-weight: 900; letter-spacing: -0.02em;
-    color: var(--qz-text); display: flex; align-items: center; gap: 0.75rem;
-}
-.status-pill {
-    display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
-    border-radius: 6px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.05em; white-space: nowrap;
-}
-.pill-pub  { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-.pill-draft{ background: #fafafa; color: #6b7280; border: 1px solid #e5e7eb; }
-.game-type-badge {
-    display: inline-flex; align-items: center; gap: 5px; margin-top: 0.4rem;
-    font-size: 0.75rem; font-weight: 700; color: var(--qz-purple);
-    background: var(--qz-purple-soft); padding: 3px 10px; border-radius: 20px;
-}
+    /* ── Header ── */
+    .editor-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
 
-.head-btns { display: flex; gap: 0.625rem; align-items: center; flex-wrap: wrap; }
+    .editor-head-left h1 {
+        font-size: 1.75rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: var(--qz-text);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 
-/* ── Game-type hint ── */
-.type-hint {
-    background: var(--qz-purple-soft); border: 1px solid var(--qz-purple-border);
-    border-radius: 10px; padding: 0.875rem 1.25rem; margin-bottom: 2rem;
-    font-size: 0.8125rem; font-weight: 600; color: var(--qz-text-light);
-    display: flex; align-items: flex-start; gap: 0.625rem;
-}
-.type-hint i { color: var(--qz-purple); font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
 
-/* ── Question rows ── */
-.q-row {
-    background: white; border-radius: 12px; margin-bottom: 1.25rem;
-    border: 1px solid var(--qz-purple-border);
-    box-shadow: 0 2px 8px rgba(124,58,237,0.04);
-    transition: box-shadow 0.2s;
-}
-.q-row:hover { box-shadow: 0 4px 16px rgba(124,58,237,0.08); }
+    .pill-pub {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
 
-.q-row-header {
-    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--qz-purple-border);
-    display: flex; justify-content: space-between; align-items: center;
-}
-.q-row-num { font-weight: 900; font-size: 0.8rem; color: var(--qz-purple); }
-.del-btn { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1.2rem; transition: color 0.2s; display: flex; }
-.del-btn:hover { color: #ef4444; }
+    .pill-draft {
+        background: #fafafa;
+        color: #6b7280;
+        border: 1px solid #e5e7eb;
+    }
 
-.q-row-body { padding: 1.5rem; display: grid; gap: 1rem; }
-.q-row-body.two-col { grid-template-columns: 1fr 1fr; }
-.q-row-body.three-col { grid-template-columns: 2fr 1fr; }
+    .game-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--qz-purple);
+        background: var(--qz-purple-soft);
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
 
-.wrong-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem; padding: 0 1.5rem 1.5rem; }
+    .head-btns {
+        display: flex;
+        gap: 0.625rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
-.field-group { display: flex; flex-direction: column; gap: 0.35rem; }
-.field-label { font-size: 0.65rem; font-weight: 800; color: var(--qz-text-light); text-transform: uppercase; letter-spacing: 0.08em; }
-.field-input {
-    border: none; border-bottom: 2px solid var(--qz-purple-border);
-    padding: 0.5rem 0; font-size: 1.0625rem; font-weight: 700;
-    width: 100%; outline: none; transition: border-color 0.2s;
-    background: transparent; color: var(--qz-text); font-family: 'Inter', sans-serif;
-}
-.field-input:focus { border-color: var(--qz-purple); }
-.field-input.small { font-size: 0.9rem; font-weight: 600; }
+    /* ── Game-type hint ── */
+    .type-hint {
+        background: var(--qz-purple-soft);
+        border: 1px solid var(--qz-purple-border);
+        border-radius: 10px;
+        padding: 0.875rem 1.25rem;
+        margin-bottom: 2rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--qz-text-light);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.625rem;
+    }
 
-/* ── Add button ── */
-.add-btn {
-    width: 100%; padding: 1.5rem; border: 2.5px dashed var(--qz-purple-border);
-    border-radius: 12px; background: transparent; cursor: pointer;
-    font-size: 0.9375rem; font-weight: 800; color: var(--qz-purple);
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    transition: all 0.2s; margin-top: 0.5rem; font-family: 'Inter', sans-serif;
-}
-.add-btn:hover { border-color: var(--qz-purple); background: var(--qz-purple-soft); }
+    .type-hint i {
+        color: var(--qz-purple);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
 
-/* ── Sticky footer actions ── */
-.sticky-bar {
-    position: fixed; bottom: 0; left: var(--sidebar-width, 220px); right: 0;
-    background: white; border-top: 1px solid var(--qz-purple-border);
-    padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 -4px 20px rgba(124,58,237,0.06); z-index: 50;
-}
-.term-count { font-size: 0.8125rem; font-weight: 700; color: var(--qz-text-light); }
-.term-count span { color: var(--qz-purple); font-weight: 900; }
+    /* ── Question rows ── */
+    .q-row {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--qz-purple-border);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.04);
+        transition: box-shadow 0.2s;
+    }
 
-@media (max-width: 700px) {
-    .q-row-body.two-col, .q-row-body.three-col { grid-template-columns: 1fr; }
-    .wrong-row { grid-template-columns: 1fr 1fr; }
-    .sticky-bar { left: 0; }
-}
+    .q-row:hover {
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.08);
+    }
+
+    .q-row-header {
+        padding: 0.875rem 1.25rem;
+        border-bottom: 1px solid var(--qz-purple-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .q-row-num {
+        font-weight: 900;
+        font-size: 0.8rem;
+        color: var(--qz-purple);
+    }
+
+    .del-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #9ca3af;
+        font-size: 1.2rem;
+        transition: color 0.2s;
+        display: flex;
+    }
+
+    .del-btn:hover {
+        color: #ef4444;
+    }
+
+    .q-row-body {
+        padding: 1.5rem;
+        display: grid;
+        gap: 1rem;
+    }
+
+    .q-row-body.two-col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .q-row-body.three-col {
+        grid-template-columns: 2fr 1fr;
+    }
+
+    .wrong-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.875rem;
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .field-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--qz-text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .field-input {
+        border: none;
+        border-bottom: 2px solid var(--qz-purple-border);
+        padding: 0.5rem 0;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        width: 100%;
+        outline: none;
+        transition: border-color 0.2s;
+        background: transparent;
+        color: var(--qz-text);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .field-input:focus {
+        border-color: var(--qz-purple);
+    }
+
+    .field-input.small {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* ── Add button ── */
+    .add-btn {
+        width: 100%;
+        padding: 1.5rem;
+        border: 2.5px dashed var(--qz-purple-border);
+        border-radius: 12px;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.9375rem;
+        font-weight: 800;
+        color: var(--qz-purple);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .add-btn:hover {
+        border-color: var(--qz-purple);
+        background: var(--qz-purple-soft);
+    }
+
+    /* ── Sticky footer actions ── */
+    .sticky-bar {
+        position: fixed;
+        bottom: 0;
+        left: var(--sidebar-width);
+        right: 0;
+        background: white;
+        border-top: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 -4px 20px rgba(109, 40, 217, 0.06);
+        z-index: 50;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .term-count {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--qz-text-light);
+    }
+
+    .term-count span {
+        color: var(--qz-purple);
+        font-weight: 900;
+    }
+
+    @media (max-width: 700px) {
+
+        .q-row-body.two-col,
+        .q-row-body.three-col {
+            grid-template-columns: 1fr;
+        }
+
+        .wrong-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .sticky-bar {
+            left: 0;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -109,9 +276,11 @@
             <h1>
                 {{ game.title }}
                 {% if game.is_published %}
-                <span class="status-pill pill-pub"><i class="ph-fill ph-circle" style="font-size:.5rem"></i> Жарияланды</span>
+                <span class="status-pill pill-pub"><i class="ph-fill ph-circle" style="font-size:.5rem"></i>
+                    Жарияланды</span>
                 {% else %}
-                <span class="status-pill pill-draft"><i class="ph-fill ph-circle" style="font-size:.5rem"></i> Жобалама</span>
+                <span class="status-pill pill-draft"><i class="ph-fill ph-circle" style="font-size:.5rem"></i>
+                    Жобалама</span>
                 {% endif %}
             </h1>
             <div class="game-type-badge">
@@ -127,7 +296,8 @@
                 <i class="ph-duotone ph-floppy-disk"></i> Сақтау
             </button>
             {% if game.is_published %}
-            <button onclick="saveGame(false)" class="btn btn-primary" style="padding:9px 18px; font-size:0.875rem; background:#10b981;">
+            <button onclick="saveGame(false)" class="btn btn-primary"
+                style="padding:9px 18px; font-size:0.875rem; background:#10b981;">
                 <i class="ph-duotone ph-check-circle"></i> Жарияланды
             </button>
             {% else %}
@@ -180,158 +350,158 @@
 
 {% block extra_js %}
 <script>
-const GAME_TYPE = '{{ game.game_type }}';
-let questions = {{ game.questions|safe }};
+    const GAME_TYPE = '{{ game.game_type }}';
+    let questions = {{ game.questions| safe }};
 
-// ── Per-type config ──
-const TYPE_CONFIG = {
-    froggy: {
-        hint: 'Froggy Jumps: сұрақ мен дұрыс жауапты, және 3 қате нұсқаны толтырыңыз. Бақа дұрыс дөңгелекке секіреді.',
-        hasTerm: false, hasWrong: true
-    },
-    quiz: {
-        hint: 'Quiz: сұрақ мен дұрыс жауапты, және 3 қате нұсқаны толтырыңыз. 2×2 сетка пайда болады.',
-        hasTerm: false, hasWrong: true
-    },
-    memory: {
-        hint: 'Memory: термин мен анықтаманы толтырыңыз. Карточкалар жұппен жасырылады — жадыңды сынайды!',
-        hasTerm: true, hasWrong: false
-    },
-    match: {
-        hint: 'Match (Сәйкестендіру): сұрақ пен жауапты толтырыңыз. Екі бағанда араласып шығады, сызықпен жалғанады.',
-        hasTerm: true, hasWrong: false
-    },
-    fill_blank: {
-        hint: 'Fill in the Blank: сұрақты (теңдеуді) және дұрыс жауапты толтырыңыз. Оқушы жауапты өзі жазады.',
-        hasTerm: false, hasWrong: false
-    },
-};
+    // ── Per-type config ──
+    const TYPE_CONFIG = {
+        froggy: {
+            hint: 'Froggy Jumps: сұрақ пен дұрыс жауапты, және 3 қате нұсқаны толтырыңыз. Бақа дұрыс дөңгелекке секіреді.',
+            hasTerm: false, hasWrong: true
+        },
+        quiz: {
+            hint: 'Quiz: сұрақ пен дұрыс жауапты, және 3 қате нұсқаны толтырыңыз. 2×2 сетка пайда болады.',
+            hasTerm: false, hasWrong: true
+        },
+        memory: {
+            hint: 'Memory: термин мен анықтаманы толтырыңыз. Карточкалар жұппен жасырылады — жадыңды сынайды!',
+            hasTerm: true, hasWrong: false
+        },
+        match: {
+            hint: 'Match (Сәйкестендіру): сұрақ пен жауапты толтырыңыз. Екі бағанда араласып шығады, сызықпен жалғанады.',
+            hasTerm: true, hasWrong: false
+        },
+        fill_blank: {
+            hint: 'Fill in the Blank: сұрақты (теңдеуді) және дұрыс жауапты толтырыңыз. Оқушы жауапты өзі жазады.',
+            hasTerm: false, hasWrong: false
+        },
+    };
 
-const cfg = TYPE_CONFIG[GAME_TYPE] || { hint:'', hasTerm:false, hasWrong:false };
-document.getElementById('typeHint').textContent = cfg.hint;
+    const cfg = TYPE_CONFIG[GAME_TYPE] || { hint: '', hasTerm: false, hasWrong: false };
+    document.getElementById('typeHint').textContent = cfg.hint;
 
-// ── Render ──
-function render() {
-    const list = document.getElementById('qList');
-    list.innerHTML = '';
-    if (questions.length === 0) addQuestion(true);
-    else questions.forEach((q, i) => buildRow(q, i));
-    updateCount();
-}
+    // ── Render ──
+    function render() {
+        const list = document.getElementById('qList');
+        list.innerHTML = '';
+        if (questions.length === 0) addQuestion(true);
+        else questions.forEach((q, i) => buildRow(q, i));
+        updateCount();
+    }
 
-function buildRow(data, idx) {
-    const row = document.createElement('div');
-    row.className = 'q-row';
+    function buildRow(data, idx) {
+        const row = document.createElement('div');
+        row.className = 'q-row';
 
-    // Header
-    const hdr = document.createElement('div');
-    hdr.className = 'q-row-header';
-    hdr.innerHTML = `<span class="q-row-num">${idx + 1}</span>
+        // Header
+        const hdr = document.createElement('div');
+        hdr.className = 'q-row-header';
+        hdr.innerHTML = `<span class="q-row-num">${idx + 1}</span>
         <button class="del-btn" onclick="this.closest('.q-row').remove(); updateCount();">
             <i class="ph-duotone ph-trash"></i>
         </button>`;
-    row.appendChild(hdr);
+        row.appendChild(hdr);
 
-    // Main body
-    const body = document.createElement('div');
-    body.className = 'q-row-body';
+        // Main body
+        const body = document.createElement('div');
+        body.className = 'q-row-body';
 
-    if (cfg.hasTerm) {
-        // Memory / Match: Term + Definition
-        body.classList.add('two-col');
-        body.innerHTML = `
+        if (cfg.hasTerm) {
+            // Memory / Match: Term + Definition
+            body.classList.add('two-col');
+            body.innerHTML = `
             <div class="field-group">
                 <span class="field-label">Термин (сұрақ)</span>
-                <input type="text" class="field-input q-val" value="${esc(data?.q||'')}" placeholder="мысалы: Пифагор теоремасы">
+                <input type="text" class="field-input q-val" value="${esc(data?.q || '')}" placeholder="мысалы: Пифагор теоремасы">
             </div>
             <div class="field-group">
                 <span class="field-label">Анықтама (жауап)</span>
-                <input type="text" class="field-input a-val" value="${esc(data?.a||'')}" placeholder="мысалы: a²+b²=c²">
+                <input type="text" class="field-input a-val" value="${esc(data?.a || '')}" placeholder="мысалы: a²+b²=c²">
             </div>`;
-    } else if (!cfg.hasWrong) {
-        // Fill Blank: Q + A only
-        body.classList.add('two-col');
-        body.innerHTML = `
+        } else if (!cfg.hasWrong) {
+            // Fill Blank: Q + A only
+            body.classList.add('two-col');
+            body.innerHTML = `
             <div class="field-group">
                 <span class="field-label">Сұрақ (теңдеу)</span>
-                <input type="text" class="field-input q-val" value="${esc(data?.q||'')}" placeholder="мысалы: 3 × ___ = 21">
+                <input type="text" class="field-input q-val" value="${esc(data?.q || '')}" placeholder="мысалы: 3 × ___ = 21">
             </div>
             <div class="field-group">
                 <span class="field-label">Дұрыс жауап</span>
-                <input type="text" class="field-input a-val" value="${esc(data?.a||'')}" placeholder="мысалы: 7">
+                <input type="text" class="field-input a-val" value="${esc(data?.a || '')}" placeholder="мысалы: 7">
             </div>`;
-    } else {
-        // Froggy / Quiz: Q + A
-        body.classList.add('two-col');
-        body.innerHTML = `
+        } else {
+            // Froggy / Quiz: Q + A
+            body.classList.add('two-col');
+            body.innerHTML = `
             <div class="field-group">
                 <span class="field-label">Сұрақ</span>
-                <input type="text" class="field-input q-val" value="${esc(data?.q||'')}" placeholder="мысалы: 7 × 8 = ?">
+                <input type="text" class="field-input q-val" value="${esc(data?.q || '')}" placeholder="мысалы: 7 × 8 = ?">
             </div>
             <div class="field-group">
                 <span class="field-label">Дұрыс жауап</span>
-                <input type="text" class="field-input a-val" value="${esc(data?.a||'')}" placeholder="мысалы: 56">
+                <input type="text" class="field-input a-val" value="${esc(data?.a || '')}" placeholder="мысалы: 56">
             </div>`;
-    }
-    row.appendChild(body);
-
-    // Wrong answers (only for froggy/quiz)
-    if (cfg.hasWrong) {
-        const wrong = row.querySelector ? null : null;
-        const wr = document.createElement('div');
-        wr.className = 'wrong-row';
-        const wrongs = data?.wrong || ['', '', ''];
-        [0,1,2].forEach(i => {
-            wr.innerHTML += `<div class="field-group">
-                <span class="field-label">Қате нұсқа ${i+1}</span>
-                <input type="text" class="field-input small w-val" value="${esc(wrongs[i]||'')}" placeholder="Қате жауап">
-            </div>`;
-        });
-        row.appendChild(wr);
-    }
-
-    document.getElementById('qList').appendChild(row);
-}
-
-function addQuestion(silent = false) {
-    const list = document.getElementById('qList');
-    const idx = list.querySelectorAll('.q-row').length;
-    buildRow(null, idx);
-    updateCount();
-    if (!silent) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function updateCount() {
-    const count = document.querySelectorAll('.q-row').length;
-    document.getElementById('termCount').textContent = count;
-}
-
-function esc(str) {
-    return String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function saveGame(publish) {
-    const data = [];
-    document.querySelectorAll('.q-row').forEach(row => {
-        const q = row.querySelector('.q-val')?.value?.trim();
-        const a = row.querySelector('.a-val')?.value?.trim();
-        if (!q || !a) return;
-
-        const entry = { q, a };
-        if (cfg.hasWrong) {
-            entry.wrong = Array.from(row.querySelectorAll('.w-val'))
-                .map(i => i.value.trim()).filter(v => v);
         }
-        data.push(entry);
-    });
+        row.appendChild(body);
 
-    if (data.length === 0) { alert('Кем дегенде 1 термин қосыңыз!'); return; }
+        // Wrong answers (only for froggy/quiz)
+        if (cfg.hasWrong) {
+            const wrong = row.querySelector ? null : null;
+            const wr = document.createElement('div');
+            wr.className = 'wrong-row';
+            const wrongs = data?.wrong || ['', '', ''];
+            [0, 1, 2].forEach(i => {
+                wr.innerHTML += `<div class="field-group">
+                <span class="field-label">Қате нұсқа ${i + 1}</span>
+                <input type="text" class="field-input small w-val" value="${esc(wrongs[i] || '')}" placeholder="Қате жауап">
+            </div>`;
+            });
+            row.appendChild(wr);
+        }
 
-    document.getElementById('qInput').value = JSON.stringify(data);
-    document.getElementById('publishInput').value = publish ? 'on' : '';
-    document.getElementById('saveForm').submit();
-}
+        document.getElementById('qList').appendChild(row);
+    }
 
-render();
+    function addQuestion(silent = false) {
+        const list = document.getElementById('qList');
+        const idx = list.querySelectorAll('.q-row').length;
+        buildRow(null, idx);
+        updateCount();
+        if (!silent) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function updateCount() {
+        const count = document.querySelectorAll('.q-row').length;
+        document.getElementById('termCount').textContent = count;
+    }
+
+    function esc(str) {
+        return String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function saveGame(publish) {
+        const data = [];
+        document.querySelectorAll('.q-row').forEach(row => {
+            const q = row.querySelector('.q-val')?.value?.trim();
+            const a = row.querySelector('.a-val')?.value?.trim();
+            if (!q || !a) return;
+
+            const entry = { q, a };
+            if (cfg.hasWrong) {
+                entry.wrong = Array.from(row.querySelectorAll('.w-val'))
+                    .map(i => i.value.trim()).filter(v => v);
+            }
+            data.push(entry);
+        });
+
+        if (data.length === 0) { alert('Кем дегенде 1 термин қосыңыз!'); return; }
+
+        document.getElementById('qInput').value = JSON.stringify(data);
+        document.getElementById('publishInput').value = publish ? 'on' : '';
+        document.getElementById('saveForm').submit();
+    }
+
+    render();
 </script>
 {% endblock %}

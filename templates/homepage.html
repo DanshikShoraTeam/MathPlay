@@ -21,17 +21,32 @@
     }
 
     :root {
+      /* Brand Colors */
       --violet: #6d28d9;
       --violet-dark: #4c1d95;
       --violet-mid: #8b5cf6;
       --violet-light: #ede9fe;
       --violet-pale: #f5f3ff;
+      
+      /* Neutral Palette */
       --ink: #0f0a1e;
       --ink-mid: #2d1b69;
       --gray: #6b7280;
       --gray-light: #f3f4f6;
       --white: #ffffff;
       --border: #e9e4f8;
+
+      /* Game Card Colors */
+      --color-froggy: #6d28d9;
+      --color-quiz: #db2777;
+      --color-memory: #0891b2;
+      --color-match: #059669;
+      --color-fill: #b45309;
+
+      /* Status Colors */
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --success-dot: #10b981;
     }
 
     html {
@@ -237,7 +252,7 @@
       font-size: 17px;
       line-height: 1.65;
       color: var(--gray);
-      max-width: 420px;
+      max-width: 440px;
       animation: fadeUp 0.6s ease 0.3s both;
     }
 
@@ -365,21 +380,10 @@
       transform: scale(1.03);
     }
 
-    .g1 {
-      background: var(--violet);
-    }
-
-    .g2 {
-      background: #db2777;
-    }
-
-    .g3 {
-      background: #0891b2;
-    }
-
-    .g4 {
-      background: #059669;
-    }
+    .g1 { background: var(--color-froggy); }
+    .g2 { background: var(--color-quiz); }
+    .g3 { background: var(--color-memory); }
+    .g4 { background: var(--color-match); }
 
     .mc-footer {
       margin-top: 16px;
@@ -398,8 +402,8 @@
     .mc-badge {
       font-size: 11px;
       font-weight: 600;
-      background: #dcfce7;
-      color: #166534;
+      background: var(--success-bg);
+      color: var(--success-text);
       padding: 3px 10px;
       border-radius: 999px;
     }
@@ -428,8 +432,8 @@
     }
 
     .float-badge.bottom {
-      bottom: -16px;
-      left: -10px;
+      bottom: -15px;
+      right: 20px;
       animation-delay: 1.5s;
     }
 
@@ -437,7 +441,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #10b981;
+      background: var(--success-dot);
     }
 
     .fb-xp {
@@ -545,25 +549,11 @@
       opacity: 1;
     }
 
-    .gt1 {
-      background: var(--violet);
-    }
-
-    .gt2 {
-      background: #be185d;
-    }
-
-    .gt3 {
-      background: #0e7490;
-    }
-
-    .gt4 {
-      background: #047857;
-    }
-
-    .gt5 {
-      background: #b45309;
-    }
+    .gt1 { background: var(--color-froggy); }
+    .gt2 { background: var(--color-quiz); }
+    .gt3 { background: var(--color-memory); }
+    .gt4 { background: var(--color-match); }
+    .gt5 { background: var(--color-fill); }
 
     .game-bottom {
       padding: 18px 16px;
@@ -867,10 +857,10 @@
     </a>
     <div class="nav-right">
       {% if user.is_authenticated %}
-        <a href="{% url 'dashboard' %}" class="nav-btn">Админкаға өту</a>
+      <a href="{% url 'dashboard' %}" class="nav-btn">Админкаға өту</a>
       {% else %}
-        <a href="{% url 'login' %}" class="nav-link">Кіру</a>
-        <a href="{% url 'register' %}" class="nav-btn">Тіркелу</a>
+      <a href="{% url 'login' %}" class="nav-link">Кіру</a>
+      <a href="{% url 'register' %}" class="nav-btn">Тіркелу</a>
       {% endif %}
     </div>
   </nav>
@@ -887,8 +877,7 @@
         <span class="accent">ойынға айналдыр</span>
       </h1>
       <p class="hero-sub">
-        Сұрақ жаса. Жариялан. Оқушылар ойнайды.<br>
-        Кез келген тақырыпты 2 минутта интерактивті форматқа өткізіңіз.
+        Математиканы ойынмен меңгер. Ешқандай шектеусіз, бірден баста! Оқушыларды қызықтырып, білім деңгейін арттыр.
       </p>
       <div class="hero-actions">
         <a href="/register/" class="btn-main">
@@ -986,7 +975,7 @@
   <!-- HOW IT WORKS -->
   <section class="how">
     <div class="section-label">Қалай жұмыс істейді</div>
-    <h2 class="section-title">3 қадам — дайын</h2>
+    <h2 class="section-title">Үш қадам — дайын нәтиже!</h2>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
@@ -1010,7 +999,9 @@
   <div class="cta-wrap">
     <section class="cta">
       <h2 class="cta-title">Бүгін бастаңыз</h2>
-      <p class="cta-sub">Тіркелу тегін. Кредит карта керек емес.</p>
+        <p class="cta-sub">
+          Математиканы ойынмен меңгер. Ешқандай шектеусіз, бірден баста! Оқушыларды қызықтырып, білім деңгейін арттыр.
+        </p>
       <a href="/register/" class="cta-btn">
         Тегін тіркелу <i class="ph-bold ph-arrow-right"></i>
       </a>
