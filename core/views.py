@@ -1,105 +1,102 @@
 import json
+import socket
+import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.db.models import Avg, Count, Sum, Max, Q
+from django.db.models import Avg, Sum, Max
 from django.views.decorators.csrf import csrf_exempt
-from .models import Game, GameSession, StudentProfile
+from django.utils import timezone
 from django.contrib.auth.models import User
-import socket
+from .models import Game, GameSession, StudentProfile
 
-# ═════════════════════════════════════════════════════════════
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ═════════════════════════════════════════════════════════════
+
+# --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
 def get_local_ip():
-    """Возвращает локальный IP-адрес сервера в сети."""
+    """Возвращает локальный IP-адрес машины в сети (чтобы ученики могли подключиться)."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # Не нужно быть доступным, только чтобы определить интерфейс
         s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
+        ip = s.getsockname()[0]
     except Exception:
-        IP = '127.0.0.1'
+        ip = '127.0.0.1'
     finally:
         s.close()
-    return IP
+    return ip
 
 
-# ═════════════════════════════════════════════════════════════
-# ПРИМЕРЫ ИГР - УРОВЕНЬ 6-7 КЛАССА
-# (по одной игре каждого типа для демонстрации)
-# ═════════════════════════════════════════════════════════════
+# Примеры игр, которые автоматически создаются при регистрации нового учителя
 SAMPLE_GAMES = [
     {
         'title': 'Алгебра негіздері — Quiz',
         'game_type': 'quiz',
         'questions': [
-            {'q': '2x + 6 = 14, x = ?',        'a': '4',  'wrong': ['3', '5', '6']},
-            {'q': '3x - 9 = 12, x = ?',         'a': '7',  'wrong': ['5', '8', '6']},
-            {'q': 'x² = 49, x = ?',             'a': '7',  'wrong': ['6', '8', '9']},
-            {'q': '5x + 3 = 28, x = ?',         'a': '5',  'wrong': ['4', '6', '7']},
-            {'q': '(-3) × (-4) = ?',            'a': '12', 'wrong': ['-12', '7', '-7']},
-            {'q': '15% от 80 = ?',              'a': '12', 'wrong': ['10', '14', '16']},
-            {'q': '√144 = ?',                   'a': '12', 'wrong': ['11', '13', '14']},
+            {'q': '2x + 6 = 14, x = ?',  'a': '4',  'wrong': ['3', '5', '6']},
+            {'q': '3x - 9 = 12, x = ?',  'a': '7',  'wrong': ['5', '8', '6']},
+            {'q': 'x² = 49, x = ?',      'a': '7',  'wrong': ['6', '8', '9']},
+            {'q': '5x + 3 = 28, x = ?',  'a': '5',  'wrong': ['4', '6', '7']},
+            {'q': '(-3) × (-4) = ?',     'a': '12', 'wrong': ['-12', '7', '-7']},
+            {'q': '15% от 80 = ?',       'a': '12', 'wrong': ['10', '14', '16']},
+            {'q': '√144 = ?',            'a': '12', 'wrong': ['11', '13', '14']},
         ]
     },
     {
         'title': 'Геометрия формулалары — Memory',
         'game_type': 'memory',
         'questions': [
-            {'q': 'Шеңбер ауданы',           'a': 'S = πr²'},
-            {'q': 'Үшбұрыш ауданы',          'a': 'S = ½·a·h'},
-            {'q': 'Трапеция ауданы',          'a': 'S = ½(a+b)·h'},
-            {'q': 'Параллелограмм ауданы',    'a': 'S = a·h'},
-            {'q': 'Шаршы периметрі',          'a': 'P = 4a'},
-            {'q': 'Тікбұрышты периметрі',     'a': 'P = 2(a+b)'},
+            {'q': 'Шеңбер ауданы',        'a': 'S = πr²'},
+            {'q': 'Үшбұрыш ауданы',       'a': 'S = ½·a·h'},
+            {'q': 'Трапеция ауданы',       'a': 'S = ½(a+b)·h'},
+            {'q': 'Параллелограмм ауданы', 'a': 'S = a·h'},
+            {'q': 'Шаршы периметрі',       'a': 'P = 4a'},
+            {'q': 'Тікбұрышты периметрі',  'a': 'P = 2(a+b)'},
         ]
     },
     {
         'title': 'Дәреже және тамыр — Froggy',
         'game_type': 'froggy',
         'questions': [
-            {'q': '7² = ?',               'a': '49',  'wrong': ['42', '54', '56']},
-            {'q': '2³ = ?',               'a': '8',   'wrong': ['6', '9', '16']},
-            {'q': '√169 = ?',             'a': '13',  'wrong': ['11', '12', '14']},
-            {'q': '(-5)² = ?',            'a': '25',  'wrong': ['-25', '10', '20']},
-            {'q': '4³ = ?',               'a': '64',  'wrong': ['48', '56', '72']},
-            {'q': '√256 = ?',             'a': '16',  'wrong': ['14', '15', '17']},
-            {'q': '3⁴ = ?',               'a': '81',  'wrong': ['64', '72', '84']},
+            {'q': '7² = ?',    'a': '49', 'wrong': ['42', '54', '56']},
+            {'q': '2³ = ?',    'a': '8',  'wrong': ['6', '9', '16']},
+            {'q': '√169 = ?',  'a': '13', 'wrong': ['11', '12', '14']},
+            {'q': '(-5)² = ?', 'a': '25', 'wrong': ['-25', '10', '20']},
+            {'q': '4³ = ?',    'a': '64', 'wrong': ['48', '56', '72']},
+            {'q': '√256 = ?',  'a': '16', 'wrong': ['14', '15', '17']},
+            {'q': '3⁴ = ?',    'a': '81', 'wrong': ['64', '72', '84']},
         ]
     },
     {
         'title': 'Теңдеу шешу — Fill Blank',
         'game_type': 'fill_blank',
         'questions': [
-            {'q': '3x = 21, x = ?',         'a': '7'},
-            {'q': '2x + 5 = 15, x = ?',     'a': '5'},
-            {'q': '4x - 8 = 12, x = ?',     'a': '5'},
-            {'q': 'x/3 + 2 = 6, x = ?',     'a': '12'},
-            {'q': '5x - 3 = 22, x = ?',     'a': '5'},
-            {'q': '√x = 9, x = ?',          'a': '81'},
-            {'q': '2x² = 50, x = ?',        'a': '5'},
+            {'q': '3x = 21, x = ?',      'a': '7'},
+            {'q': '2x + 5 = 15, x = ?',  'a': '5'},
+            {'q': '4x - 8 = 12, x = ?',  'a': '5'},
+            {'q': 'x/3 + 2 = 6, x = ?',  'a': '12'},
+            {'q': '5x - 3 = 22, x = ?',  'a': '5'},
+            {'q': '√x = 9, x = ?',       'a': '81'},
+            {'q': '2x² = 50, x = ?',     'a': '5'},
         ]
     },
     {
         'title': 'Ғылыми формулалар — Match',
         'game_type': 'match',
         'questions': [
-            {'q': 'Пифагор теоремасы',       'a': 'a² + b² = c²'},
-            {'q': 'Шеңбер ауданы',           'a': 'S = πr²'},
-            {'q': 'Ом заңы',                 'a': 'I = U / R'},
-            {'q': 'Жылдамдық формуласы',     'a': 'v = s / t'},
-            {'q': 'Жұмыс формуласы',         'a': 'A = F · s'},
-            {'q': 'Кинетикалық энергия',     'a': 'Eк = mv² / 2'},
+            {'q': 'Пифагор теоремасы',    'a': 'a² + b² = c²'},
+            {'q': 'Шеңбер ауданы',        'a': 'S = πr²'},
+            {'q': 'Ом заңы',              'a': 'I = U / R'},
+            {'q': 'Жылдамдық формуласы',  'a': 'v = s / t'},
+            {'q': 'Жұмыс формуласы',      'a': 'A = F · s'},
+            {'q': 'Кинетикалық энергия',  'a': 'Eк = mv² / 2'},
         ]
     },
 ]
 
 
 def create_sample_games(user):
-    """Create one default sample game per type for a new teacher."""
+    """Создаёт демонстрационные игры для нового учителя при регистрации."""
     for sample in SAMPLE_GAMES:
         Game.objects.create(
             title=sample['title'],
@@ -110,18 +107,16 @@ def create_sample_games(user):
         )
 
 
-# ═══════════════════════════════════════════════════════
-# ═════════════════════════════════════════════════════════════
-# ПРЕДСТАВЛЕНИЯ АУТЕНТИФИКАЦИИ (Логин/Регистрация/Выход)
-# ═════════════════════════════════════════════════════════════
-# ═══════════════════════════════════════════════════════
+# --- АВТОРИЗАЦИЯ ---
 
 def homepage(request):
+    """Главная страница сайта."""
     return render(request, 'homepage.html', {'hide_sidebar': True})
 
 
 @csrf_exempt
 def login_view(request):
+    """Страница входа. Проверяет логин и пароль, при успехе перенаправляет на дашборд."""
     error = None
     if request.method == 'POST':
         u = request.POST.get('username', '').strip()
@@ -136,10 +131,11 @@ def login_view(request):
 
 @csrf_exempt
 def register_view(request):
+    """Страница регистрации. Создаёт нового учителя и стартовые игры-примеры."""
     error = None
     if request.method == 'POST':
-        u = request.POST.get('username', '').strip()
-        p = request.POST.get('password', '')
+        u  = request.POST.get('username', '').strip()
+        p  = request.POST.get('password', '')
         p2 = request.POST.get('password2', '')
         if not u or not p:
             error = 'Қолданушы аты мен пароль міндетті.'
@@ -149,7 +145,7 @@ def register_view(request):
             error = 'Бұл қолданушы аты бос емес.'
         else:
             user = User.objects.create_user(username=u, password=p)
-            create_sample_games(user)   # Создание примеров игр для нового пользователя
+            create_sample_games(user)
             login(request, user)
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'redirect': '/dashboard/'})
@@ -158,53 +154,53 @@ def register_view(request):
 
 
 def logout_view(request):
+    """Выход из аккаунта."""
     logout(request)
     return redirect('homepage')
 
 
-# ═══════════════════════════════════════════════════════
-# ═════════════════════════════════════════════════════════════
-# ПАНЕЛЬ УПРАВЛЕНИЯ (для учителей)
-# ═════════════════════════════════════════════════════════════
-# ═══════════════════════════════════════════════════════
+# --- ПАНЕЛЬ УЧИТЕЛЯ (ДАШБОРД) ---
 
 @login_required
 def dashboard(request):
-    games = Game.objects.filter(author=request.user).order_by('-created_at')
+    """Главная страница учителя: список игр и общая статистика."""
+    games    = Game.objects.filter(author=request.user).order_by('-created_at')
     sessions = GameSession.objects.filter(game__author=request.user)
     stats = {
-        'total_games': games.count(),
-        'total_plays': games.aggregate(Sum('play_count'))['play_count__sum'] or 0,
+        'total_games':    games.count(),
+        'total_plays':    games.aggregate(Sum('play_count'))['play_count__sum'] or 0,
         'total_sessions': sessions.values('student_name').distinct().count(),
-        'avg_score': sessions.aggregate(Avg('score_percent'))['score_percent__avg'] or 0,
+        'avg_score':      sessions.aggregate(Avg('score_percent'))['score_percent__avg'] or 0,
     }
     return render(request, 'dashboard/main.html', {
-        'games': games, 
-        'stats': stats,
-        'local_ip': get_local_ip()
+        'games':    games,
+        'stats':    stats,
+        'local_ip': get_local_ip(),
     })
 
 
 @login_required
 def game_create_type(request):
+    """Страница выбора типа новой игры."""
     return render(request, 'dashboard/game_create_type.html')
 
 
 @login_required
 def game_create_form(request, gtype):
+    """Форма создания игры выбранного типа. При сохранении переходит на редактор вопросов."""
     if request.method == 'POST':
         title = request.POST.get('title')
-        game = Game.objects.create(title=title, game_type=gtype, author=request.user)
+        game  = Game.objects.create(title=title, game_type=gtype, author=request.user)
         return redirect('game_edit', pk=game.pk)
     return render(request, 'dashboard/game_create_form.html', {'gtype': gtype})
 
 
 @login_required
 def game_edit(request, pk):
+    """Редактор вопросов игры. Сохраняет список вопросов и статус публикации."""
     game = get_object_or_404(Game, pk=pk, author=request.user)
     if request.method == 'POST':
-        questions_raw = request.POST.get('questions', '[]')
-        game.questions = json.loads(questions_raw)
+        game.questions = json.loads(request.POST.get('questions', '[]'))
         new_title = request.POST.get('title', '').strip()
         if new_title:
             game.title = new_title
@@ -217,11 +213,13 @@ def game_edit(request, pk):
 
 @login_required
 def game_detail(request, pk):
+    """Перенаправляет на страницу статистики игры."""
     return redirect('game_stats', pk=pk)
 
 
 @login_required
 def game_quick_publish(request, pk):
+    """Быстрая публикация игры (POST). Возвращает код для учеников."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
     game = get_object_or_404(Game, pk=pk, author=request.user)
@@ -232,6 +230,7 @@ def game_quick_publish(request, pk):
 
 @login_required
 def game_unpublish(request, pk):
+    """Снимает игру с публикации (POST)."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
     game = get_object_or_404(Game, pk=pk, author=request.user)
@@ -242,6 +241,7 @@ def game_unpublish(request, pk):
 
 @login_required
 def game_delete(request, pk):
+    """Удаляет игру (POST)."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
     game = get_object_or_404(Game, pk=pk, author=request.user)
@@ -251,17 +251,21 @@ def game_delete(request, pk):
 
 @login_required
 def game_stats(request, pk):
-    game = get_object_or_404(Game, pk=pk, author=request.user)
+    """Страница статистики одной игры: лучший результат, среднее, время и график."""
+    game     = get_object_or_404(Game, pk=pk, author=request.user)
     sessions = game.sessions.all().order_by('-completed_at')
     stats = {
         'max_score': sessions.aggregate(Max('score_percent'))['score_percent__max'] or 0,
         'avg_score': sessions.aggregate(Avg('score_percent'))['score_percent__avg'] or 0,
-        'avg_time':  sessions.aggregate(Avg('time_seconds'))['time_seconds__avg'] or 0,
+        'avg_time':  sessions.aggregate(Avg('time_seconds'))['time_seconds__avg']  or 0,
     }
-    chart_labels = [s.student_name for s in sessions[:10]]
+    # Данные для графика — последние 10 сессий
+    chart_labels = [s.student_name  for s in sessions[:10]]
     chart_scores = [s.score_percent for s in sessions[:10]]
     return render(request, 'dashboard/game_stats.html', {
-        'game': game, 'sessions': sessions, 'stats': stats,
+        'game':         game,
+        'sessions':     sessions,
+        'stats':        stats,
         'chart_labels': json.dumps(chart_labels),
         'chart_scores': json.dumps(chart_scores),
     })
@@ -269,78 +273,72 @@ def game_stats(request, pk):
 
 @login_required
 def full_stats(request):
-    games = Game.objects.filter(author=request.user)
+    """Общая статистика учителя: XP, количество игр, активность по дням."""
+    games    = Game.objects.filter(author=request.user)
     sessions = GameSession.objects.filter(game__in=games).order_by('-completed_at')
-    
-    # Агрегированные данные по всем играм
+
     stats = {
-        'total_xp': sessions.aggregate(Sum('xp_earned'))['xp_earned__sum'] or 0,
+        'total_xp':    sessions.aggregate(Sum('xp_earned'))['xp_earned__sum']         or 0,
         'total_plays': sessions.count(),
-        'avg_score': sessions.aggregate(Avg('score_percent'))['score_percent__avg'] or 0,
-        'total_time': sessions.aggregate(Sum('time_seconds'))['time_seconds__sum'] or 0,
+        'avg_score':   sessions.aggregate(Avg('score_percent'))['score_percent__avg']  or 0,
+        'total_time':  sessions.aggregate(Sum('time_seconds'))['time_seconds__sum']    or 0,
     }
-    
-    # Распределение сеансов по типам игр
-    type_labels = []
-    type_data = []
+
+    # Количество сессий по каждому типу игры (для круговой диаграммы)
+    type_labels, type_data = [], []
     for gtype, name in Game.GAME_TYPES:
         count = sessions.filter(game__game_type=gtype).count()
         if count > 0:
             type_labels.append(name)
             type_data.append(count)
-            
-    # Ежедневная активность (последние 7 дней)
-    from django.utils import timezone
-    import datetime
-    daily_labels = []
-    daily_data = []
+
+    # Активность за последние 7 дней (для линейного графика)
+    daily_labels, daily_data = [], []
     for i in range(6, -1, -1):
         day = timezone.now().date() - datetime.timedelta(days=i)
         daily_labels.append(day.strftime('%d.%m'))
         daily_data.append(sessions.filter(completed_at__date=day).count())
 
     return render(request, 'dashboard/full_stats.html', {
-        'stats': stats,
+        'stats':           stats,
         'recent_sessions': sessions[:15],
-        'type_labels': json.dumps(type_labels),
-        'type_data': json.dumps(type_data),
-        'daily_labels': json.dumps(daily_labels),
-        'daily_data': json.dumps(daily_data),
+        'type_labels':     json.dumps(type_labels),
+        'type_data':       json.dumps(type_data),
+        'daily_labels':    json.dumps(daily_labels),
+        'daily_data':      json.dumps(daily_data),
     })
 
 
 @login_required
 def student_list(request):
+    """Страница со списком учеников (шаблон)."""
     return render(request, 'dashboard/student_list.html')
 
 
-# ═══════════════════════════════════════════════════════
-# ═════════════════════════════════════════════════════════════
-# ПРЕДСТАВЛЕНИЯ СТУДЕНТА / ИГРА (для игроков)
-# ═════════════════════════════════════════════════════════════
-# ═══════════════════════════════════════════════════════
+# --- ИГРОВЫЕ СТРАНИЦЫ (для учеников) ---
 
 def get_game_by_code(code, only_published=True):
-    """Helper to find game by publish_code or MP-id"""
-    # 1. Пробуем найти игру по коду публикации
-    game = Game.objects.filter(publish_code=code)
+    """Находит игру по короткому коду или по ID в формате MP<номер>."""
+    # Сначала ищем по полю publish_code
+    qs = Game.objects.filter(publish_code=code)
     if only_published:
-        game = game.filter(is_published=True)
-    game = game.first()
-    
-    # 2. Пробуем найти по ID игры
+        qs = qs.filter(is_published=True)
+    game = qs.first()
+
+    # Если не нашли — пробуем формат MP123
     if not game and code.startswith('MP'):
         clean_id = code.replace('MP', '')
         if clean_id.isdigit():
-            game = Game.objects.filter(pk=clean_id)
+            qs = Game.objects.filter(pk=clean_id)
             if only_published:
-                game = game.filter(is_published=True)
-            game = game.first()
-            
+                qs = qs.filter(is_published=True)
+            game = qs.first()
+
     return game
 
 
 def play_entry(request, code):
+    """Страница ввода имени перед игрой. Проверяет, что игра существует и опубликована."""
     game = get_game_by_code(code, only_published=True)
     if not game:
         return render(request, 'student/game_not_found.html', {'code': code, 'hide_sidebar': True}, status=404)
@@ -349,6 +347,11 @@ def play_entry(request, code):
 
 @csrf_exempt
 def play_game(request, code):
+    """
+    Игровая страница для ученика.
+    GET  — отдаёт шаблон нужного типа игры.
+    POST — принимает результат (JSON) и сохраняет сессию в базу.
+    """
     game = get_game_by_code(code, only_published=True)
     if not game:
         return render(request, 'student/game_not_found.html', {'code': code, 'hide_sidebar': True}, status=404)
@@ -369,16 +372,17 @@ def play_game(request, code):
         return JsonResponse({'status': 'ok', 'session_id': session.id})
 
     return render(request, f'games/{game.game_type}.html', {
-        'game': game,
+        'game':         game,
         'student_name': student_name,
         'hide_sidebar': True,
     })
 
 
 def play_result(request, code, session_id):
+    """Страница результатов после завершения игры."""
     session = get_object_or_404(GameSession, id=session_id)
     return render(request, 'student/play_result.html', {
-        'session': session,
-        'code': code,
+        'session':      session,
+        'code':         code,
         'hide_sidebar': True,
     })
